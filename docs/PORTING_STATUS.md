@@ -22,7 +22,7 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 | Mu-Silicium base | Reference snapshot pinned | Exact main commit and six submodule gitlinks recorded; not proven to match upstream build |
 | Mu-Silicium license | BSD-2-Clause metadata | Individual submodule license review remains necessary |
 | Candidate host build | Build #8 succeeded; artifact uploaded | ARM64 CI build from pinned overlay/reference snapshot; dependency snapshot may differ from maintainer's original build. New build with automated entry-point audit is queued. |
-| Boot chain / handoff | Reset vector matches SEC TE entry point in built FD; handset entry remains unverified | Verify processor-state contract, Samsung boot-chain acceptance, and recovery path before any device test |
+| Boot chain / handoff | Reset vector exactly matches SEC TE entry; SEC source requires EL1/EL2 | Exact handset bootloader entry level remains unknown; EL3 would loop. Verify boot-chain acceptance and recovery before any device test |
 | DRAM / memory map | Upstream-specific assumptions; not independently confirmed | Compare with reliable sources; do not infer from Android version |
 | Display / keys / UFS | Upstream reports support | Reproduce and distinguish reported status from independent validation |
 | Linux / Windows handoff | Upstream reports partial progress and remaining issues | OS integration is separate from UEFI build |
@@ -39,7 +39,7 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 - Audited the board DSC/FDF: no explicit USB/xHCI/DWC3 or DisplayPort DXE driver module is listed.
 - Recorded a separate Mu-Silicium snapshot and exact submodule gitlinks; this is not claimed to be the device upstream's actual build base.
 - Recorded the owner's report of maintainer permission; source remains fetched transiently at build time rather than mirrored.
-- Added a reproducible ARM64 candidate host-build workflow and temporary-workspace build script. Build #8 succeeded and published a short-lived CI artifact; no handset was connected or modified.\n- Inspected the candidate Android boot-image container and verified the embedded FD/FDT offsets, FD size/hash, and FD/stack placement in the active overlay.\n- Added `scripts/audit_firmware_entry.py`; it confirms the FD reset-vector branch target exactly matches the AArch64 SEC TE image entry point and that the TE image base matches `0xC9000000`. The same check is now part of the candidate build workflow.
+- Added a reproducible ARM64 candidate host-build workflow and temporary-workspace build script. Build #8 succeeded and published a short-lived CI artifact; no handset was connected or modified.\n- Inspected the candidate Android boot-image container and verified the embedded FD/FDT offsets, FD size/hash, and FD/stack placement in the active overlay.\n- Added `scripts/audit_firmware_entry.py`; it confirms the FD reset-vector branch target exactly matches the AArch64 SEC TE image entry point and that the TE image base matches `0xC9000000`. The same check is now part of the candidate build workflow.\n- Traced SEC startup: the Exynos 9820 `PlatformAssemblyInitialize()` is a no-op; the startup macro accepts EL1/EL2 and deliberately loops at EL3. The user's exact bootloader entry level is not known.\n- Confirmed the appended DTB is not currently shown being consumed by UEFI: SEC startup reuses x0, and the platform FDF's Device Tree driver/blob are disabled.
 
 ## Next milestones
 
