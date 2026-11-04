@@ -61,8 +61,8 @@ import sys
 path = Path(sys.argv[1])
 text = path.read_text()
 for line in (
-    "  GpioLib|S5E9820Pkg/Library/GpioLib/GpioLib.inf\\n",
-    "  SpeedyLib|S5E9820Pkg/Library/SpeedyLib/SpeedyLib.inf\\n",
+    "  GpioLib|S5E9820Pkg/Library/GpioLib/GpioLib.inf\n",
+    "  SpeedyLib|S5E9820Pkg/Library/SpeedyLib/SpeedyLib.inf\n",
 ):
     if line not in text:
         raise SystemExit(f"Expected stale mapping not found in {path}: {line.strip()}")
