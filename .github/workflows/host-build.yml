@@ -9,7 +9,7 @@ on:
       - "scripts/audit_firmware_entry.py"
       - "scripts/audit_android_boot_image.py"
       - "scripts/audit_sec_bootarg_capture.py"
-      - "patches/0002-sec-capture-bootarg-and-bound-x0.patch"
+      - "scripts/apply_sec_bootarg_capture.py"
       - "patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch"
       - "UPSTREAM.lock.json"
   workflow_dispatch:
