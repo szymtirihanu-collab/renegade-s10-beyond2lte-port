@@ -7,6 +7,7 @@ on:
       - ".github/workflows/host-build.yml"
       - "scripts/host_build.sh"
       - "scripts/audit_firmware_entry.py"
+      - "scripts/audit_android_boot_image.py"
       - "patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch"
       - "UPSTREAM.lock.json"
   workflow_dispatch:
@@ -42,6 +43,12 @@ jobs:
       - name: Audit firmware reset vector against SEC file
         run: >-
           python scripts/audit_firmware_entry.py
+          "${{ runner.temp }}/beyond2lte-host-build/Mu-Silicium/Build/beyond2ltePkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd"
+
+      - name: Audit Android boot-image wrapper and embedded payload
+        run: >-
+          python scripts/audit_android_boot_image.py
+          "${{ runner.temp }}/beyond2lte-host-build/Mu-Silicium/Mu-beyond2lte.img"
           "${{ runner.temp }}/beyond2lte-host-build/Mu-Silicium/Build/beyond2ltePkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd"
 
       - name: Upload candidate firmware artifacts
