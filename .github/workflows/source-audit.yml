@@ -24,6 +24,8 @@ jobs:
         run: python scripts/check_docs.py
       - name: Audit pinned upstream metadata and tree
         run: python scripts/audit_upstream_tree.py
+      - name: Verify UFS read-only patch applies to pinned driver source
+        run: python scripts/audit_ufs_patch.py
       - name: Audit pinned USB and display source markers
         run: python scripts/audit_io_support.py
       - name: Verify Mu-Silicium reference snapshot and submodules
