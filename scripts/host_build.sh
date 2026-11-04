@@ -46,6 +46,31 @@ mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/Platforms/Samsung"
 test -d "$WORK/Mu-Silicium/Silicium-ACPI/SoCs/Samsung"
 test -d "$WORK/Mu-Silicium/Silicium-ACPI/Platforms/Samsung"
 
+# The pinned Mu-Silicium snapshot does not contain the legacy GpioLib or
+# SpeedyLib implementations referenced by this platform include. The current
+# Samsung GPIO and Speedy DXE drivers do not consume either class: GpioDxe
+# consumes GpioBankLib, and SpeedyDxe uses IoLib. Remove only these stale,
+# unused library mappings from the temporary workspace so Stuart's path
+# validator does not fail before compilation. Keep the repository source intact.
+PLATFORM_DSC_INC="$WORK/Mu-Silicium/Silicon/Samsung/S5E9820Pkg/S5E9820Pkg.dsc.inc"
+test -f "$PLATFORM_DSC_INC"
+python3 - "$PLATFORM_DSC_INC" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text()
+for line in (
+    "  GpioLib|S5E9820Pkg/Library/GpioLib/GpioLib.inf\\n",
+    "  SpeedyLib|S5E9820Pkg/Library/SpeedyLib/SpeedyLib.inf\\n",
+):
+    if line not in text:
+        raise SystemExit(f"Expected stale mapping not found in {path}: {line.strip()}")
+    text = text.replace(line, "")
+path.write_text(text)
+print("Removed two unimplemented, unused legacy library mappings in temporary build tree.")
+PY
+
 echo "== Installing host build dependencies =="
 sudo apt-get update
 sudo apt-get install -y \
