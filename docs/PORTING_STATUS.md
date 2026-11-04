@@ -6,7 +6,7 @@ Last reviewed: 2026-11-04
 
 The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, AArch64. The user reports Android 16 / Evolution X. An existing device-specific UEFI implementation has been identified and pinned; this repository is a downstream integration and reproducibility workspace.
 
-**No firmware has been built or tested by this repository. No hardware boot has been independently verified here.**
+**A host-only candidate firmware build has succeeded (build #8); its artifact has been inspected and a reset-vector-to-SEC-TE entry-point audit has passed locally. No firmware has been tested on the handset, and no hardware boot has been independently verified here.**
 
 | Area | Status | Evidence / next step |
 |---|---|---|
@@ -21,8 +21,8 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 | External display UEFI support | Not present in board DSC/FDF | No explicit DisplayPort DXE driver; no external output validated |
 | Mu-Silicium base | Reference snapshot pinned | Exact main commit and six submodule gitlinks recorded; not proven to match upstream build |
 | Mu-Silicium license | BSD-2-Clause metadata | Individual submodule license review remains necessary |
-| Candidate host build | Workflow added; not yet run | Manual ARM64 build uses pinned upstream overlay and pinned Mu-Silicium snapshot; dependency snapshot may differ from maintainer's original build |
-| Boot chain / handoff | Upstream implementation exists; independent validation absent | Review exact boot path and record evidence |
+| Candidate host build | Build #8 succeeded; artifact uploaded | ARM64 CI build from pinned overlay/reference snapshot; dependency snapshot may differ from maintainer's original build. New build with automated entry-point audit is queued. |
+| Boot chain / handoff | Reset vector matches SEC TE entry point in built FD; handset entry remains unverified | Verify processor-state contract, Samsung boot-chain acceptance, and recovery path before any device test |
 | DRAM / memory map | Upstream-specific assumptions; not independently confirmed | Compare with reliable sources; do not infer from Android version |
 | Display / keys / UFS | Upstream reports support | Reproduce and distinguish reported status from independent validation |
 | Linux / Windows handoff | Upstream reports partial progress and remaining issues | OS integration is separate from UEFI build |
@@ -39,7 +39,7 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 - Audited the board DSC/FDF: no explicit USB/xHCI/DWC3 or DisplayPort DXE driver module is listed.
 - Recorded a separate Mu-Silicium snapshot and exact submodule gitlinks; this is not claimed to be the device upstream's actual build base.
 - Recorded the owner's report of maintainer permission; source remains fetched transiently at build time rather than mirrored.
-- Added a manual ARM64 candidate host-build workflow and a temporary-workspace build script. It does not publish artifacts or interact with a handset.
+- Added a reproducible ARM64 candidate host-build workflow and temporary-workspace build script. Build #8 succeeded and published a short-lived CI artifact; no handset was connected or modified.\n- Inspected the candidate Android boot-image container and verified the embedded FD/FDT offsets, FD size/hash, and FD/stack placement in the active overlay.\n- Added `scripts/audit_firmware_entry.py`; it confirms the FD reset-vector branch target exactly matches the AArch64 SEC TE image entry point and that the TE image base matches `0xC9000000`. The same check is now part of the candidate build workflow.
 
 ## Next milestones
 
@@ -50,7 +50,7 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 5. Audit the existing Exynos USB/PHY and Type-C implementation path before writing a DWC3 host driver.
 6. Independently verify display, USB input, and OS handoff on hardware before making any device-support claim.
 
-A source checkout check is not a build. A metadata/tree audit is not a full source-code audit. A build is not a successful device boot. A successful UEFI boot is not proof that Linux or Windows drivers are complete.
+A source checkout check is not a build. A metadata/tree audit is not a full source-code audit. A host build and a static entry-point audit are not a successful device boot. A successful UEFI boot is not proof that Linux or Windows drivers are complete.
 
 
 ## Latest source-level I/O findings
