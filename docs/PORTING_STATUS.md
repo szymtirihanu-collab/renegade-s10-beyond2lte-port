@@ -43,12 +43,14 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 
 ## Next milestones
 
-1. Run the manual ARM64 candidate host build and resolve any compile errors.
-2. Ask the maintainer which exact Mu-Silicium commit and submodule set produced their reported working build.
-3. Record the exact conditions of permission before publishing adapted source or distributing firmware binaries.
-4. Review dependency license notices and add required attribution.
-5. Audit the existing Exynos USB/PHY and Type-C implementation path before writing a DWC3 host driver.
+1. Design a reviewed SEC boot-argument capture mechanism that preserves the incoming DTB pointer before the common SEC entry reuses x0; do not assume the pointer is valid until validated.
+2. Add a bounded FDT validation/consumer path and connect it to the platform configuration only after its memory ownership and lifetime are established.
+3. Obtain trustworthy evidence for the exact SM-G975F S-Boot revision's image acceptance policy and entry EL/security/register/cache/MMU state; generic ARM64 protocol is not device-specific proof.
+4. Ask the maintainer which exact Mu-Silicium commit and submodule set produced their reported working build; record permission conditions and review dependency license notices.
+5. Continue the Exynos USB/PHY and Type-C implementation audit after the boot-entry contract is better understood.
 6. Independently verify display, USB input, and OS handoff on hardware before making any device-support claim.
+
+The detailed source trace and limits are recorded in [BOOT_HANDOFF_AUDIT.md](BOOT_HANDOFF_AUDIT.md).
 
 A source checkout check is not a build. A metadata/tree audit is not a full source-code audit. A host build and a static entry-point audit are not a successful device boot. A successful UEFI boot is not proof that Linux or Windows drivers are complete.
 
