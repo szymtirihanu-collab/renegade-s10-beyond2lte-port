@@ -10,7 +10,7 @@ CODE="${UEFI_CODE:-}"
 VARS="${UEFI_VARS:-}"
 ISO="${WINDOWS_ISO:-}"
 TARGET="${QEMU_TARGET_DISK:-}"
-TARGET_SIZE="${QEMU_TARGET_SIZE:-32G}"
+TARGET_SIZE="${QEMU_TARGET_SIZE:-64G}"
 
 if [[ ! -f "$MEDIA_IMAGE" ]]; then
   echo "ERROR: validated media bundle not found: $MEDIA_IMAGE" >&2
@@ -58,7 +58,19 @@ TPM_SOCKET="$OUTDIR/qemu-swtpm.sock"
 TPM_LOG="$OUTDIR/qemu-swtpm.log"
 mkdir -p "$TPM_STATE"
 if [[ ! -e "$VARS_COPY" ]]; then cp --reflink=auto "$VARS" "$VARS_COPY"; fi
-if [[ ! -e "$TARGET" ]]; then "$QEMU_IMG" create -f qcow2 "$TARGET" "$TARGET_SIZE"; else echo "Reusing existing QEMU target disk: $TARGET"; fi
+if [[ ! -e "$TARGET" ]]; then
+  "$QEMU_IMG" create -f qcow2 "$TARGET" "$TARGET_SIZE"
+else
+  # Grow an existing target if it is below the Windows Setup minimum. Never shrink it.
+  CURRENT_BYTES="$("$QEMU_IMG" info --output=json "$TARGET" | python3 -c 'import json,sys; print(json.load(sys.stdin)["virtual-size"])')"
+  REQUIRED_BYTES="$("$QEMU_IMG" measure --output=json -f qcow2 -O qcow2 "$TARGET" "$TARGET_SIZE" | python3 -c 'import json,sys; print(json.load(sys.stdin)["required-size"])')"
+  if (( CURRENT_BYTES < REQUIRED_BYTES )); then
+    echo "Expanding existing QEMU target disk to at least $TARGET_SIZE ..."
+    "$QEMU_IMG" resize -f qcow2 "$TARGET" "$TARGET_SIZE"
+  else
+    echo "Existing QEMU target disk is already large enough: $TARGET"
+  fi
+fi
 if [[ -e "$TPM_SOCKET" ]]; then
   echo "ERROR: TPM socket already exists: $TPM_SOCKET" >&2
   echo "Check for an older QEMU/swtpm process before removing a stale socket." >&2
