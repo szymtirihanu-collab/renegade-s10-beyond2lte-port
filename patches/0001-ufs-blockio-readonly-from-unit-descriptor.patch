@@ -19,9 +19,3 @@ index 0000000..0000000 100644
      Dev->Media.WriteCaching = FALSE;
      Dev->Media.BlockSize = BlkSize;
      Dev->Media.IoAlign = 0;
-
-Notes:
-- This is a capability-reporting correction only. It does not bypass write protection.
-- It does not make a protected LU writable; it makes Block I/O report that it is protected.
-- It is not integrated into the downstream firmware build and has not been compiled or hardware-tested.
-- The LUN 2 / LBA 0 mapping and actual descriptor value still need read-only confirmation.
