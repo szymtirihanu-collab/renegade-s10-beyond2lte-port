@@ -4,11 +4,11 @@ Last reviewed: 2026-11-04
 
 ## Summary
 
-This is a research-stage feasibility project. No firmware has been built or tested on a Galaxy S10+. No device-specific EDK2 package exists here yet.
+This is a research-stage feasibility project for the **Samsung Galaxy S10+ SM-G975F (beyond2lte)**. The owner has confirmed the model. No firmware has been built or tested on a Galaxy S10+. No device-specific EDK2 package exists here yet.
 
 | Area | Status | Evidence needed |
 |---|---|---|
-| Device identity | Documented | Confirm exact handset model |
+| Device identity | Confirmed: SM-G975F | Verify against the handset's own model information before any future device-specific test |
 | CPU/SoC | Documented from public device references | Samsung Exynos 9820 technical documentation |
 | EDK2 platform package | Not started | Platform specification and upstream code review |
 | Boot entry / hand-off | Unknown | Verified Samsung boot firmware behavior and supported boot method |
@@ -23,7 +23,7 @@ This is a research-stage feasibility project. No firmware has been built or test
 
 ## Immediate research tasks
 
-1. Confirm the exact model identifier (for example, SM-G975F) and region variant.
+1. Record the handset's firmware build and bootloader state as reported by normal device information screens; do not infer these from the model number.
 2. Review Samsung's public Exynos 9820 kernel source and device tree for hardware topology.
 3. Identify the earliest boot stage that can be observed without modifying partitions.
 4. Establish whether a third-party UEFI payload can be launched through a documented, supported path. Do not assume the Qualcomm Renegade chain applies.
