@@ -40,6 +40,15 @@ ACPI_OVERLAY="$WORK/beyond2lte-upstream/silicium-acpi-overlay"
 test -d "$ACPI_OVERLAY/SoCs/Samsung"
 mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/SoCs"
 cp -a "$ACPI_OVERLAY/SoCs/." "$WORK/Mu-Silicium/Silicium-ACPI/SoCs/"
+
+# Apply the reviewed UFS Block I/O capability correction to the temporary
+# build tree. This reports the LU's descriptor write-protect state; it does
+# not bypass device protection or attempt any storage writes.
+echo "== Applying reviewed UFS Block I/O read-only patch =="
+patch --batch --forward --directory="$WORK/Mu-Silicium" --strip=1 \
+  < "$ROOT/patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch"
+grep -Fq 'Dev->Media.ReadOnly = (Ufs->UnitDesc[Lun].bLUWriteProtect != 0);' \
+  "$WORK/Mu-Silicium/Silicon/Samsung/SamsungPkg/Drivers/UfsDxe/UfsDxe.c"
 mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/Platforms/Samsung"
 
 # Fail early with a useful message if the package search paths drift again.
