@@ -19,6 +19,10 @@ Evidence is in the pinned upstream source at `orhunnx/beyond2lte-uefi`, commit `
 3. The failing LUN and LBA have not been mapped conclusively to the EFI filesystem/partition in the downstream repository's independent evidence.
 4. A reported `Media.ReadOnly = FALSE` is not proof that the underlying logical unit is writable.
 
+## Prepared source correction
+
+A minimal, non-bypass patch is committed at [`patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch`](../patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch). It changes the Block I/O `ReadOnly` capability to reflect the already-read Unit Descriptor field `bLUWriteProtect`. This prevents firmware from advertising a protected LU as writable; it does not defeat protection or make writes succeed. The patch is intentionally not integrated into a firmware image and is not yet compiled or hardware-tested.
+
 ## Safe engineering conclusion
 
 - Do not add unconditional cache clean/invalidate calls as a supposed fix based on the earlier misdiagnosis.
