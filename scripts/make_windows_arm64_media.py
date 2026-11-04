@@ -82,6 +82,12 @@ def main():
         else:
             print("[1/6] Extracting ISO")
             run(["xorriso", "-osirrox", "on", "-indev", str(iso), "-extract", "/", str(stage)])
+        # ISO9660/UDF mounts are read-only, and copytree preserves their
+        # read-only mode bits. Normalize the private staging tree so wimlib
+        # can create split SWM files and mtools can read every directory.
+        for node in (stage, *stage.rglob("*")):
+            mode = node.stat().st_mode
+            node.chmod(mode | (0o700 if node.is_dir() else 0o200))
         boot = find_ci(stage, "EFI/BOOT/BOOTAA64.EFI")
         if not boot: raise RuntimeError("ISO lacks EFI/BOOT/BOOTAA64.EFI; not ARM64 UEFI installation media")
         machine = pe_machine(boot)
