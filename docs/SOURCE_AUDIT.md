@@ -14,7 +14,18 @@ The candidate's documentation identifies these source areas:
 - `mu-silicium-overlay/Resources/DTBs/beyond2lte.dtb`: device tree used by the build.
 - `silicium-acpi-overlay/SoCs/Samsung/S5E9820/`: ACPI source material.
 
-This is a source-audit map based on the upstream repository's documentation. The files have not yet been imported into this repository.
+This is a source-audit map based on the upstream repository's documentation. The files have not been imported into this repository.
+
+## Pinned tree inventory
+
+A read-only GitHub API inventory was performed against commit `f122c7024c5eeef2c8c78dfd08c62708c9ef823d`:
+
+- The recursive tree response was complete (not truncated).
+- It contains platform driver sources for EL2, GIC suspend, reset/runtime hooks, SEH, and touch.
+- No path name contains USB, xHCI, EHCI, Type-C, DisplayPort, or DWC3 terms.
+- The repository metadata reports no declared license, and no root `LICENSE`/ `COPYING` file was present in the tree.
+
+This is deliberately a **path-level inventory only**. It does not prove that no generic USB implementation exists in Mu-Silicium dependencies, nor does it replace reading the actual source and device-tree controller nodes. The upstream README independently reports USB as unavailable. See [CLOUD_CI.md](CLOUD_CI.md) for the automated metadata audit.
 
 ## Hardware and firmware details reported upstream
 
@@ -44,7 +55,7 @@ Do not rely on a moving default branch for a reproducible build. The local overl
 
 ## Next engineering milestone
 
-The next safe milestone is a **host-only source audit and reproducible build**. Compare the candidate's actual platform package with upstream Mu-Silicium, inspect licensing, pin every dependency, and run the documented static/build checks without connecting or modifying the phone.
+The next safe milestone is a **licensed, host-only source review and reproducible build**. Compare the candidate's actual platform package with upstream Mu-Silicium, inspect licensing, pin every dependency, and run the documented static/build checks without connecting or modifying the phone.
 
 Do not import opaque binaries or copy code without checking its license and provenance. Do not treat Android recovery trees as UEFI platform packages.
 
