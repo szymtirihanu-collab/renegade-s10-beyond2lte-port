@@ -16,6 +16,52 @@
     "vendored": false,
     "reason_not_vendored": "Do not copy or redistribute upstream source until its licensing is clarified."
   },
+  "mu_silicium_reference_snapshot": {
+    "repository": "https://github.com/Project-Silicium/Mu-Silicium",
+    "ref": "main",
+    "commit": "6b3d90b79e191e08171bfedd3980234a7e49d340",
+    "commit_date": "2026-11-01T21:31:54Z",
+    "license_status": "BSD-2-Clause",
+    "relationship_to_device_upstream": "Independent reference snapshot only; the beyond2lte upstream BUILD.md does not pin this Mu-Silicium commit, so this is not yet a verified build dependency set.",
+    "submodules": [
+      {
+        "path": "Binaries",
+        "repository": "https://github.com/Project-Silicium/Device-Binaries",
+        "commit": "9f4dbfd7d61acdae69fd5bb48720ce7e53711e25",
+        "license_metadata": "not declared by GitHub API"
+      },
+      {
+        "path": "Common/Mu",
+        "repository": "https://github.com/microsoft/mu_plus",
+        "commit": "566cf5c8c2c8adf8e1a337ced1d147bc6246856f",
+        "license_metadata": "NOASSERTION; inspect source-level license notices before reuse"
+      },
+      {
+        "path": "Common/Mu_OEM_Sample",
+        "repository": "https://github.com/microsoft/mu_oem_sample",
+        "commit": "9292f9254adb94c5e5bb09a370b9662fcd66a953",
+        "license_metadata": "NOASSERTION; inspect source-level license notices before reuse"
+      },
+      {
+        "path": "Mu_Basecore",
+        "repository": "https://github.com/microsoft/mu_basecore",
+        "commit": "42d6d889f7c1f27e3226b44074b8a0ffe21cd988",
+        "license_metadata": "NOASSERTION; inspect source-level license notices before reuse"
+      },
+      {
+        "path": "Silicium-ACPI",
+        "repository": "https://github.com/Project-Silicium/Silicium-ACPI",
+        "commit": "f50bc115dccdea12e44efb550fd783d1daafc739",
+        "license_metadata": "not declared by GitHub API"
+      },
+      {
+        "path": "Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl",
+        "repository": "https://github.com/openssl/openssl",
+        "commit": "67b5686b4419b4cb8caa502711c41815f5279751",
+        "license_metadata": "Apache-2.0"
+      }
+    ]
+  },
   "renegade_reference": {
     "repository": "https://github.com/edk2-porting/edk2-msm",
     "role": "Architectural reference only; Qualcomm-specific platform code is not the SM-G975F implementation."
