@@ -26,5 +26,7 @@ jobs:
         run: python scripts/audit_upstream_tree.py
       - name: Audit pinned USB and display source markers
         run: python scripts/audit_io_support.py
+      - name: Verify Mu-Silicium reference snapshot and submodules
+        run: python scripts/audit_mu_snapshot.py
       - name: Audit pinned USB and display source markers
         run: python scripts/audit_io_support.py
