@@ -19,3 +19,6 @@ jobs:
           python-version: "3.x"
       - name: Validate documentation
         run: python scripts/check_docs.py
+
+      - name: Syntax-check Windows media builders
+        run: python -m py_compile scripts/make_windows_arm64_media.py scripts/build_windows11_beyond2lte_aio.py
