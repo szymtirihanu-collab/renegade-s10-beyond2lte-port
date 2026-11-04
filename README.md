@@ -31,6 +31,10 @@ Windows 11 ARM64 is now the primary OS experiment for this port. The existing UE
 
 See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [permission record](docs/UPSTREAM_PERMISSION.md), [model profile](docs/MODEL.md), [USB/display source audit](docs/USB_DISPLAY_SOURCE_AUDIT.md), [DWC3 host-driver design](docs/USB_DWC3_DRIVER_DESIGN.md), [Mu-Silicium dependency snapshot](docs/MU_SILICIUM_DEPENDENCIES.md), [cloud CI boundary](docs/CLOUD_CI.md), and [porting status](docs/PORTING_STATUS.md).
 
+## Windows ARM64 installation-media packager
+
+A host-side packager is available at [`scripts/make_windows_arm64_media.py`](scripts/make_windows_arm64_media.py). Its default ISO input is `~/Windows11_Client_arm64_en-us_26300_9457.iso`; it validates the ARM64 EFI loader, prepares FAT32 setup media, and writes an integrity report. See [`docs/WINDOWS_MEDIA_PACKAGER.md`](docs/WINDOWS_MEDIA_PACKAGER.md). This creates installation media only, not a proven handset boot chain.
+
 ## Safe scope
 
 This repository contains documentation, source-audit scripts, and a manual host-build workflow. The candidate build runs in a temporary GitHub runner and does not publish its image. No validated firmware image is provided. The project does not create partition tables, generate flash packages, or provide device-writing instructions. A successful host build is not proof that firmware is safe or bootable on a handset.
