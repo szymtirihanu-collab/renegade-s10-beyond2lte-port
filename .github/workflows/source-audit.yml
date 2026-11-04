@@ -1,0 +1,26 @@
+name: Host-side source audit
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    # Native ARM64 hosted runner; no local workstation required.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    steps:
+      - name: Check out this integration repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate project documentation
+        run: python scripts/check_docs.py
+      - name: Audit pinned upstream metadata and tree
+        run: python scripts/audit_upstream_tree.py
