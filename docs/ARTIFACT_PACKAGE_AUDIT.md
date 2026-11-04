@@ -99,3 +99,35 @@ The appended DTB is also not demonstrated to reach DXE: the current SEC entry as
 ## Current decision
 
 **Do not boot or install this candidate on the handset yet.** The outer packaging is understood, the FD/stack layout in the active overlay is internally consistent, and the FD reset vector has been checked against the exact SEC TE entry point. The next work is confirming the bootloader's EL1/EL2 entry state, completing firmware-volume validation, and establishing exact-device boot-entry and recovery evidence. USB OTG and DisplayPort remain later milestones; the first eventual hardware milestone should remain the existing internal framebuffer only.
+
+
+## Current candidate package audit (2026-11-04, commit `3f426bf08b8e915aeaef473a33e863325059cf9e`)
+
+The latest CI artifact (run [41887574178](https://github.com/szymtirihanu-collab/renegade-s10-beyond2lte-port/actions/runs/41887574178), artifact ID `13352682183`) was downloaded and inspected independently.
+
+| File | Size | SHA-256 |
+|---|---:|---|
+| `SILICIUM_UEFI.fd` | 4,194,304 bytes | `e72f446919d2c8c20baa58cb5fcb51a084b91a7b915989e6b050e3311d55c0d7` |
+| `Mu-beyond2lte.img` | 4,575,232 bytes | `6551b851131a0a439fe80991908f4db4e6adf0c979c06cd3e839262d0081596b` |
+| Artifact ZIP | 1,458,501 bytes | `3c6155be64e875c080a8a001e47663b9598411b4873b0bce00a71f1843fe8e2c` |
+
+The current package was checked for:
+
+- `ANDROID!` magic and Android boot header version 1; page size 2048.
+- Kernel payload load address `0x10008000`; ramdisk load address `0x11000000`; no second-stage payload.
+- Version-1 header extension size 1648; no recovery-DTBO payload.
+- Kernel payload starts at file offset 2048 and is 4,570,494 bytes. The five-byte ramdisk is exactly `dummy`, a placeholder rather than an initramfs.
+- BootShim's ARM64 Image magic is at payload offset 56. Its copy parameters specify FD base `0xC9000000` and size `0x400000`.
+- The 112-byte BootShim prefix is followed by the exact 4 MiB FD; the embedded FD bytes match the separately uploaded `SILICIUM_UEFI.fd` byte-for-byte.
+- The appended FDT begins at kernel-payload offset 4,194,416, is 376,078 bytes, has FDT version 17, and its structure block, strings block and reservation-map terminator are within bounds.
+- Android page-alignment and total file extents are internally consistent.
+
+An automated check for these invariants is now in `scripts/audit_android_boot_image.py` and is included in the host-build workflow. The independent local inspection passed with the same invariants.
+
+### Interpretation and remaining handoff gaps
+
+The image is an Android boot-image-v1 container whose kernel payload begins with a small ARM64 BootShim, not a Linux kernel. BootShim copies only the configured 4 MiB UEFI FD from its payload to `0xC9000000`, then branches to that address. The appended FDT is physically present after the FD, but the reviewed SEC startup path does not demonstrate that its address is preserved or delivered to DXE; the platform FDF's embedded-DTB/Device Tree DXE entries remain disabled.
+
+The reset-vector audit separately proves that the first FD instruction branches to the SEC TE entry point at FD-relative `0x83b0`. Source review establishes that the SEC entry code supports non-secure EL1 or EL2 and deliberately loops at EL3. The exact CPU exception level, security state, register contract, cache/MMU state, memory ownership and trust-policy decision made by the user's specific Samsung boot chain remain unknown.
+
+**Result: package structure and internal FD linkage pass; Samsung boot-chain acceptance and a real handset UEFI start remain unproven. This audit is not authorization to install or boot the candidate.**
