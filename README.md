@@ -18,6 +18,7 @@ Windows 11 ARM64 is now the primary OS experiment for this port. The existing UE
 - [x] Identify existing Exynos 9820 UEFI implementation
 - [x] Pin reviewed upstream commit in [UPSTREAM.lock.json](UPSTREAM.lock.json)
 - [x] Add read-only source provenance checker
+- [x] Add hosted ARM64 metadata/tree audit workflow
 - [x] Document Android 16's relevance and limits
 - [x] Select Windows 11 ARM64 as the primary OS experiment
 - [x] Document Windows boot requirements and upstream-reported blockers
@@ -27,7 +28,7 @@ Windows 11 ARM64 is now the primary OS experiment for this port. The existing UE
 - [ ] Record static validation and artifact hashes
 - [ ] Independently validate hardware boot and OS handoff
 
-See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [model profile](docs/MODEL.md), [source audit](docs/SOURCE_AUDIT.md), and [porting status](docs/PORTING_STATUS.md).
+See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [model profile](docs/MODEL.md), [source audit](docs/SOURCE_AUDIT.md), [cloud CI boundary](docs/CLOUD_CI.md), and [porting status](docs/PORTING_STATUS.md).
 
 ## Safe scope
 
