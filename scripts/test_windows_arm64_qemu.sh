@@ -5,6 +5,7 @@ set -euo pipefail
 MEDIA_IMAGE="${1:-$HOME/beyond2lte-windows11-aio/windows11-arm64-gpt-disk.img}"
 QEMU="${QEMU:-qemu-system-aarch64}"
 QEMU_IMG="${QEMU_IMG:-qemu-img}"
+SWTPM="${SWTPM:-swtpm}"
 CODE="${UEFI_CODE:-}"
 VARS="${UEFI_VARS:-}"
 ISO="${WINDOWS_ISO:-}"
@@ -31,10 +32,11 @@ fi
 if [[ ! -f "$ISO" ]]; then echo "ERROR: Windows ISO not found: $ISO" >&2; exit 2; fi
 if ! command -v "$QEMU" >/dev/null 2>&1; then echo "ERROR: qemu-system-aarch64 is not installed." >&2; exit 2; fi
 if ! command -v "$QEMU_IMG" >/dev/null 2>&1; then echo "ERROR: qemu-img is not installed (install the QEMU utilities package)." >&2; exit 2; fi
+if ! command -v "$SWTPM" >/dev/null 2>&1; then echo "ERROR: swtpm is not installed." >&2; exit 2; fi
 
 find_first() {
   for p in "$@"; do
-    [[ -f "$p" ]] && { printf '%s\n' "$p"; return 0; }
+    [[ -f "$p" ]] && { printf '%s\\n' "$p"; return 0; }
   done
   return 1
 }
@@ -47,22 +49,58 @@ fi
 if [[ -z "$CODE" || ! -f "$CODE" ]]; then echo "ERROR: AArch64 UEFI CODE firmware not found. Set UEFI_CODE=/path/to/AAVMF_CODE.fd" >&2; exit 2; fi
 if [[ -z "$VARS" || ! -f "$VARS" ]]; then echo "ERROR: AArch64 UEFI VARS template not found. Set UEFI_VARS=/path/to/AAVMF_VARS.fd" >&2; exit 2; fi
 
-# Use the original Windows ISO as a USB optical device for setup source files.
-# Keep the installation target separate and expose it as NVMe.
+# Preserve UEFI variables and TPM state between launches so the installed guest
+# retains its boot entries and TPM-sealed state across VM reboots.
 VARS_COPY="$OUTDIR/qemu-aarch64-vars-test.fd"
 TARGET="${TARGET:-$OUTDIR/windows11-qemu-install-target.qcow2}"
-cp --reflink=auto "$VARS" "$VARS_COPY"
+TPM_STATE="$OUTDIR/qemu-swtpm-state"
+TPM_SOCKET="$OUTDIR/qemu-swtpm.sock"
+TPM_LOG="$OUTDIR/qemu-swtpm.log"
+mkdir -p "$TPM_STATE"
+if [[ ! -e "$VARS_COPY" ]]; then cp --reflink=auto "$VARS" "$VARS_COPY"; fi
 if [[ ! -e "$TARGET" ]]; then "$QEMU_IMG" create -f qcow2 "$TARGET" "$TARGET_SIZE"; else echo "Reusing existing QEMU target disk: $TARGET"; fi
+if [[ -e "$TPM_SOCKET" ]]; then
+  echo "ERROR: TPM socket already exists: $TPM_SOCKET" >&2
+  echo "Check for an older QEMU/swtpm process before removing a stale socket." >&2
+  exit 2
+fi
+
+"$SWTPM" socket --tpm2 --tpmstate dir="$TPM_STATE" --ctrl type=unixio,path="$TPM_SOCKET" --log file="$TPM_LOG" &
+TPM_PID=$!
+cleanup() {
+  kill "$TPM_PID" 2>/dev/null || true
+  wait "$TPM_PID" 2>/dev/null || true
+  rm -f "$TPM_SOCKET"
+}
+trap cleanup EXIT INT TERM
+
+for _ in {1..50}; do
+  [[ -S "$TPM_SOCKET" ]] && break
+  if ! kill -0 "$TPM_PID" 2>/dev/null; then
+    echo "ERROR: swtpm exited during startup. Log: $TPM_LOG" >&2
+    exit 2
+  fi
+  sleep 0.1
+done
+if [[ ! -S "$TPM_SOCKET" ]]; then
+  echo "ERROR: swtpm did not create its control socket. Log: $TPM_LOG" >&2
+  exit 2
+fi
 
 echo "QEMU test only: generic virtual ARM machine, NOT Samsung hardware."
 echo "Windows source: $ISO (USB optical device)"
 echo "Separate install target: $TARGET"
+echo "TPM 2.0: software-emulated by swtpm; state persists in $TPM_STATE"
+echo "UEFI variables persist in $VARS_COPY"
 echo "The GPT/FAT32 media image is retained for validation but is not used as the install target."
-exec "$QEMU" \
+"$QEMU" \
   -machine virt,gic-version=max -cpu max -smp 4 -m 4096 \
   -boot menu=on \
   -drive if=pflash,format=raw,readonly=on,file="$CODE" \
   -drive if=pflash,format=raw,file="$VARS_COPY" \
+  -chardev socket,id=chrtpm,path="$TPM_SOCKET" \
+  -tpmdev emulator,id=tpm0,chardev=chrtpm \
+  -device tpm-tis-device,tpmdev=tpm0 \
   -drive if=none,id=winiso,media=cdrom,format=raw,readonly=on,file="$ISO" \
   -device qemu-xhci,id=xhci \
   -device usb-storage,drive=winiso,bootindex=1 \
