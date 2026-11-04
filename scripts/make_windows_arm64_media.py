@@ -58,13 +58,16 @@ def digest(path):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--iso", default=DEFAULT_ISO)
+    ap.add_argument("--source-dir", help="Mounted Windows ISO directory (e.g. /mnt/winiso); copied into staging before processing")
     ap.add_argument("--output", default="./beyond2lte-windows11-media")
     ap.add_argument("--size-gib", type=int, default=16)
     ap.add_argument("--uefi-image", help="Optional existing Mu-beyond2lte.img to copy beside the ESP")
     ap.add_argument("--force", action="store_true")
     a = ap.parse_args()
     iso, out = Path(a.iso).expanduser().resolve(), Path(a.output).expanduser().resolve()
+    source_dir = Path(a.source_dir).expanduser().resolve() if a.source_dir else None
     if not iso.is_file(): raise RuntimeError(f"ISO not found: {iso}")
+    if source_dir and not source_dir.is_dir(): raise RuntimeError(f"Source directory not found: {source_dir}")
     if not 8 <= a.size_gib <= 512: raise RuntimeError("--size-gib must be 8..512")
     if out.exists() and not a.force: raise RuntimeError(f"Output exists: {out}; choose another path or use --force")
     if a.uefi_image and not Path(a.uefi_image).expanduser().is_file():
@@ -73,8 +76,12 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="beyond2lte-media-") as td:
         stage = Path(td) / "iso"; stage.mkdir()
-        print("[1/6] Extracting ISO")
-        run(["xorriso", "-osirrox", "on", "-indev", str(iso), "-extract", "/", str(stage)])
+        if source_dir:
+            print(f"[1/6] Copying mounted Windows media from {source_dir} into staging")
+            shutil.copytree(source_dir, stage, dirs_exist_ok=True)
+        else:
+            print("[1/6] Extracting ISO")
+            run(["xorriso", "-osirrox", "on", "-indev", str(iso), "-extract", "/", str(stage)])
         boot = find_ci(stage, "EFI/BOOT/BOOTAA64.EFI")
         if not boot: raise RuntimeError("ISO lacks EFI/BOOT/BOOTAA64.EFI; not ARM64 UEFI installation media")
         machine = pe_machine(boot)
