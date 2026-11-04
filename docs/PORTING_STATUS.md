@@ -53,6 +53,10 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 A source checkout check is not a build. A metadata/tree audit is not a full source-code audit. A host build and a static entry-point audit are not a successful device boot. A successful UEFI boot is not proof that Linux or Windows drivers are complete.
 
 
+## UFS write-path correction
+
+A source-level audit of the pinned upstream DEBUG evidence is documented in [`UFS_WRITE_AUDIT.md`](UFS_WRITE_AUDIT.md). The earlier blanket DMA-cache-coherency diagnosis is not supported: an instrumented nonzero-LBA UFS write and FAT directory metadata update succeeded. A later Windows-triggered write to LUN 2, LBA 0 was rejected by the UFS target (`OCS=0x07`, SCSI response `0x01`). The failing LUN-to-partition mapping remains unresolved. Do not treat `Media.ReadOnly = FALSE` as proof that a LU is writable; upstream notes that this field is currently forced false rather than derived from the LU write-protect descriptor. No speculative cache patch or device-write test is authorized by this audit.
+
 ## Latest source-level I/O findings
 
 - The pinned Samsung DTS overlay explicitly configures a Synopsys DWC3 USB-DRD node for OTG and SuperSpeed Plus, and configures a PHY-related node.
