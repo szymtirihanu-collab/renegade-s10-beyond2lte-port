@@ -11,7 +11,7 @@ The source establishes a plausible *standard ARM64 Linux-kernel-style* handoff i
 
 The BootShim preserves incoming `x0`, overwrites `x1` with the address of its payload, copies the configured UEFI FD to `0xC9000000`, and branches there. The Linux ARM64 boot protocol assigns the DTB physical address to `x0`, so this design is compatible with a DTB pointer being present in `x0` at BootShim entry. This is a protocol-based inference, not direct evidence of Samsung S-Boot behavior on this handset.
 
-The UEFI SEC entry path does not preserve or consume that pointer. It uses `x0` as scratch while detecting the exception level and later calculating the SEC stack. The Exynos 9820 platform assembly hook is a no-op, and `SecEntry()` / `SecMain()` accept no boot-argument parameter and do not parse an FDT. Consequently, the appended DTB is present in the Android boot image but is not consumed by a demonstrated UEFI path.
+The original UEFI SEC entry path did not preserve or consume that pointer. The downstream branch `feature/sec-bootarg-fdt-validation` now adds a guarded capture: the entry shim saves incoming `x0` in callee-saved `x19`, passes it as the first argument to `SecEntry()`, and checks after `MemoryPeim()` whether the value is aligned and the minimum 40-byte FDT header span lies inside one declared DRAM descriptor. This is deliberately only a range check: it does not dereference `x0`, prove that it is an FDT, or make the DTB available to DXE. The actual S-Boot value and mapping contract remain unverified.
 
 The SEC startup path accepts non-secure EL1 or EL2. Its EL3 path deliberately loops; there is no EL3-to-EL2 transition in this code. The exact entry EL on the user's handset remains unverified.
 
@@ -111,8 +111,8 @@ The platform FDF's embedded device-tree section and Device Tree DXE driver are c
 
 ## Engineering decision
 
-Do not change the entry shim or add guessed register transitions based only on the generic ARM64 protocol. The next source-side improvement should be an explicit, reviewed boot-argument capture path that preserves the incoming DTB pointer before SEC startup reuses `x0`, followed by an FDT consumer that validates the pointer and memory range before parsing. That change must be designed against the actual EDK2 SEC interfaces and memory map; it must not assume that an unverified `x0` value is a valid FDT.
+The downstream branch now implements the first, conservative part of that plan: preserve incoming `x0`, pass it through the SEC C entry, and check its alignment and containment within one declared DRAM descriptor after memory initialization. It intentionally stops before dereferencing the value. A future FDT-header check must wait until the physical-to-virtual mapping and lifetime of the supplied memory are verified, and must separately establish that S-Boot actually supplies a DTB pointer for this image.
 
 For exact S-Boot facts, acceptable evidence would be a trustworthy Samsung bootloader implementation/specification for the target revision or read-only hardware diagnostics captured at the existing bootloader/firmware boundary by a qualified developer. The source-only repository cannot establish those runtime facts.
 
-**Current status: source-level handoff partially understood; exact handset bootloader handoff remains unknown; no phone boot is verified.**
+**Current status on `feature/sec-bootarg-fdt-validation`: guarded x0 capture and non-dereferencing DRAM range validation implemented; patch application and compilation are pending CI. Exact handset bootloader handoff remains unknown; no phone boot is verified.**
