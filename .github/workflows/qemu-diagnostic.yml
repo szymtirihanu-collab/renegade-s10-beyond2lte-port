@@ -1,0 +1,48 @@
+name: QEMU AArch64 UEFI host diagnostic
+
+on:
+  push:
+    branches: [qemu-only-diagnostic-harness]
+    paths:
+      - "scripts/qemu_uefi_diagnostic.py"
+      - "docs/QEMU_UEFI_DIAGNOSTIC.md"
+      - ".github/workflows/qemu-diagnostic.yml"
+  pull_request:
+    paths:
+      - "scripts/qemu_uefi_diagnostic.py"
+      - "docs/QEMU_UEFI_DIAGNOSTIC.md"
+      - ".github/workflows/qemu-diagnostic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generic-uefi-baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU and generic AArch64 UEFI firmware
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes qemu-system-arm qemu-efi-aarch64
+      - name: Locate AAVMF firmware
+        id: firmware
+        run: |
+          firmware="$(find /usr/share -type f -name 'AAVMF_CODE.fd' -print -quit)"
+          test -n "$firmware"
+          echo "path=$firmware" >> "$GITHUB_OUTPUT"
+      - name: Run bounded generic UEFI baseline
+        run: |
+          python3 scripts/qemu_uefi_diagnostic.py \
+            --aavmf-code "${{ steps.firmware.outputs.path }}" \
+            --seconds 8 \
+            --report qemu-uefi-diagnostic.json
+      - name: Upload diagnostic report
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-uefi-host-diagnostic
+          path: qemu-uefi-diagnostic.json
+          if-no-files-found: error
+          retention-days: 7
