@@ -49,6 +49,12 @@ git -C "$WORK/Mu-Silicium" apply --check "$ROOT/patches/0001-ufs-blockio-readonl
 git -C "$WORK/Mu-Silicium" apply "$ROOT/patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch"
 grep -Fq 'Dev->Media.ReadOnly = (Ufs->UnitDesc[Lun].bLUWriteProtect != 0);' \
   "$WORK/Mu-Silicium/Silicon/Samsung/SamsungPkg/Drivers/UfsDxe/UfsDxe.c"
+# Preserve SEC's incoming x0 argument and validate only its physical DRAM range.
+# The pointer is deliberately not dereferenced or treated as a DTB yet.
+echo "== Applying guarded SEC boot-argument capture patch =="
+git -C "$WORK/Mu-Silicium" apply --check "$ROOT/patches/0002-sec-capture-bootarg-and-bound-x0.patch"
+git -C "$WORK/Mu-Silicium" apply "$ROOT/patches/0002-sec-capture-bootarg-and-bound-x0.patch"
+python3 "$ROOT/scripts/audit_sec_bootarg_capture.py" "$WORK/Mu-Silicium"
 mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/Platforms/Samsung"
 
 # Fail early with a useful message if the package search paths drift again.
