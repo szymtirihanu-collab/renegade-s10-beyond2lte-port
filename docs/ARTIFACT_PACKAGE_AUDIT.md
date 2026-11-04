@@ -68,20 +68,21 @@ The 4 MiB FD was inspected at byte level after the initial audit:
 - The FV header begins at FD offset 0; its `_FVH` signature is at offset `0x28`, with a declared length of `0x400000` and header length `0x48`.
 - The first AArch64 instruction is `0x140020ec`, an unconditional `B` instruction. Its signed immediate resolves to FD-relative offset `0x83b0`.
 - The SEC FFS file GUID from `Sec.inf` is present at offset `0x48`. Its FFS type is `EFI_FV_FILETYPE_SECURITY_CORE` (`0x03`) and its declared extent is `0x48..0xb000`.
-- The reset-vector branch destination `0x83b0` falls inside that SEC FFS file's extent.
+- The SEC FFS file contains a TE image section at offset `0x158`. Its TE signature is `VZ`, machine is AArch64 (`0xAA64`), image base is `0xC9000000`, and `AddressOfEntryPoint` is `0x83b0`.
+- The reset-vector branch destination and SEC TE `AddressOfEntryPoint` are an **exact match**: `FD_BASE + 0x83b0`.
 
-A host-side check was added as `scripts/audit_firmware_entry.py`. It passed against the downloaded candidate FD. The host-build workflow now runs this check before uploading artifacts.
+A host-side check was added as `scripts/audit_firmware_entry.py`. It passed against the downloaded candidate FD. It verifies the reset-vector branch target equals the AArch64 SEC TE entry point and that the TE image base equals the configured FD base. The host-build workflow now runs this check before uploading artifacts.
 
-**Interpretation:** this resolves the narrow concern that branching to FD base would immediately execute the FV header. The FD begins with an AArch64 reset-vector branch, and its destination is inside the SEC FFS file. It does **not** yet prove that the target is the exact SEC PE/COFF entry point, that all required processor state is valid, or that Samsung's boot chain will accept the image.
+**Interpretation:** this resolves the narrow concern that branching to FD base would immediately execute the FV header. The FD begins with an AArch64 reset-vector branch, and its destination is inside the SEC FFS file. This establishes the reset-vector-to-SEC-TE entry-point linkage in the built FD. It does **not** prove that the required processor state is valid or that Samsung's boot chain will accept the image.
 
 ## Remaining blockers
 
 1. **Exact-device boot entry remains unverified.** The build guide describes packaging, but does not prove that the exact SM-G975F firmware/S-Boot revision will accept and transfer control to this image. The required execution state, trust policy, and entry register contract have not been independently established.
-2. **BootShim-to-SEC processor-state contract needs review.** The FD reset-vector branch is now structurally located inside the SEC FFS file, but the exact SEC PE/COFF entrypoint and the required exception level, cache/MMU state, register inputs, and DTB handoff still need to be documented from the linked startup code and authoritative boot-chain evidence.
+2. **BootShim-to-SEC processor-state contract needs review.** The FD reset-vector branch is now structurally located inside the SEC FFS file, but the required exception level, cache/MMU state, register inputs, and DTB handoff still need to be documented from the linked startup code and authoritative boot-chain evidence.
 3. **The appended FDT is not currently integrated as an active UEFI device-tree protocol in the FDF.** The platform FDF's Device Tree driver and embedded DTB section are commented out. Do not assume DXE consumes the appended FDT merely because it is present in the Android image.
 4. **Firmware-volume contents still need independent structural validation.** The FV header and file size were checked, but all embedded FFS/PE32 modules, machine types, relocations, and entry points have not yet been exhaustively enumerated.
 5. **No device-side recovery path has been independently verified for this user's exact firmware state.** No hardware test should be inferred from the successful host build.
 
 ## Current decision
 
-**Do not boot or install this candidate on the handset yet.** The outer packaging is understood, the FD/stack layout in the active overlay is internally consistent, and the FD reset vector has been checked against the SEC FFS file extent. The next work is exact SEC entry-point/processor-state verification, firmware-volume contents, and exact-device boot-entry evidence. USB OTG and DisplayPort remain later milestones; the first eventual hardware milestone should remain the existing internal framebuffer only.
+**Do not boot or install this candidate on the handset yet.** The outer packaging is understood, the FD/stack layout in the active overlay is internally consistent, and the FD reset vector has been checked against the exact SEC TE entry point. The next work is exact SEC entry-point/processor-state verification, firmware-volume contents, and exact-device boot-entry evidence. USB OTG and DisplayPort remain later milestones; the first eventual hardware milestone should remain the existing internal framebuffer only.
