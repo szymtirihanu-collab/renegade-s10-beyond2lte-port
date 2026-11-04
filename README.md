@@ -23,7 +23,7 @@ The target is the international Exynos SM-G975F. The Korean SM-G975N uses the re
 
 Renegade Project's published EDK2 firmware targets Qualcomm Snapdragon platforms. Its documented Qualcomm boot chain and device packages cannot be reused as if this phone were a Snapdragon device. The S10+ uses Samsung's Exynos platform and Samsung boot firmware. A real port needs independently established platform initialization, boot hand-off, memory map, interrupt controller, timer, storage, display and USB support.
 
-This repository therefore starts with platform research and a validation plan. It does **not** contain a fabricated device tree, guessed register addresses, patched boot images, or a supposedly working firmware binary.
+This repository therefore starts with platform research and a validation plan. A model-specific Project Silicium-based UEFI candidate has now been identified; see [EXISTING_UEFI_PORT_REVIEW.md](docs/EXISTING_UEFI_PORT_REVIEW.md) and [SOURCE_AUDIT.md](docs/SOURCE_AUDIT.md). The next step is to audit and reproduce that source, not to invent a second board package. This repository does **not** contain a fabricated device tree, guessed register addresses, patched boot images, or a supposedly working firmware binary.
 
 ## Current state
 
@@ -39,7 +39,7 @@ This repository therefore starts with platform research and a validation plan. I
 - [ ] Add storage, display and USB drivers
 - [ ] Validate boot on hardware with recovery and rollback procedures
 
-See [MODEL.md](docs/MODEL.md), [PORTING_STATUS.md](docs/PORTING_STATUS.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md), and [REFERENCES.md](docs/REFERENCES.md).
+See [MODEL.md](docs/MODEL.md), [EXISTING_UEFI_PORT_REVIEW.md](docs/EXISTING_UEFI_PORT_REVIEW.md), [SOURCE_AUDIT.md](docs/SOURCE_AUDIT.md), [PORTING_STATUS.md](docs/PORTING_STATUS.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md), and [REFERENCES.md](docs/REFERENCES.md).
 
 ## Safety and device integrity
 
