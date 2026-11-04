@@ -14,14 +14,14 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 | SoC / architecture | Exynos 9820 / AArch64 | Public device references |
 | Android environment | Android 16 / Evolution X, user-reported | Does not identify Samsung bootloader or stock firmware revision |
 | Existing UEFI implementation | Identified and commit-pinned | `orhunnx/beyond2lte-uefi`, commit in `UPSTREAM.lock.json` |
-| Upstream license | Unclear / not declared | Obtain clarification before copying or adapting source |
+| Upstream license / permission | No repository license; maintainer permission reported by owner | Permission is recorded in `docs/UPSTREAM_PERMISSION.md`; exact redistribution terms remain unconfirmed |
 | USB hardware | Source-audited | DTB describes Exynos DWC3 OTG and USB2/USB3 PHYs |
 | USB UEFI support | Not present in board DSC/FDF | No explicit DWC3/xHCI/USB host driver module; upstream says USB unavailable |
 | External display hardware | Source-audited | DTB describes Exynos DisplayPort and connector mux properties |
 | External display UEFI support | Not present in board DSC/FDF | No explicit DisplayPort DXE driver; no external output validated |
 | Mu-Silicium base | Reference snapshot pinned | Exact main commit and six submodule gitlinks recorded; not proven to match upstream build |
 | Mu-Silicium license | BSD-2-Clause metadata | Individual submodule license review remains necessary |
-| Host build | Not reproduced here | Beyond2lte overlay license/provenance gate first |
+| Candidate host build | Workflow added; not yet run | Manual ARM64 build uses pinned upstream overlay and pinned Mu-Silicium snapshot; dependency snapshot may differ from maintainer's original build |
 | Boot chain / handoff | Upstream implementation exists; independent validation absent | Review exact boot path and record evidence |
 | DRAM / memory map | Upstream-specific assumptions; not independently confirmed | Compare with reliable sources; do not infer from Android version |
 | Display / keys / UFS | Upstream reports support | Reproduce and distinguish reported status from independent validation |
@@ -38,15 +38,16 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 - Audited the pinned board DTS: Exynos DWC3, USB2/USB3 PHY, OTG role, Exynos DisplayPort, and connector mux properties are described.
 - Audited the board DSC/FDF: no explicit USB/xHCI/DWC3 or DisplayPort DXE driver module is listed.
 - Recorded a separate Mu-Silicium snapshot and exact submodule gitlinks; this is not claimed to be the device upstream's actual build base.
-- Documented license uncertainty and excluded upstream partition/installation assets from this repository.
+- Recorded the owner's report of maintainer permission; source remains fetched transiently at build time rather than mirrored.
+- Added a manual ARM64 candidate host-build workflow and a temporary-workspace build script. It does not publish artifacts or interact with a handset.
 
 ## Next milestones
 
-1. Resolve beyond2lte upstream licensing and source provenance.
-2. Confirm the exact Mu-Silicium revision used by the beyond2lte maintainer.
-3. Review dependency licenses and pin all build inputs before enabling a cloud build.
-4. Reproduce a clean host-only build without a connected handset or device-writing steps.
-5. Record toolchain versions, static-check results, and artifact hashes.
-6. Independently verify device boot and OS handoff before making any bootability claim.
+1. Run the manual ARM64 candidate host build and resolve any compile errors.
+2. Ask the maintainer which exact Mu-Silicium commit and submodule set produced their reported working build.
+3. Record the exact conditions of permission before publishing adapted source or distributing firmware binaries.
+4. Review dependency license notices and add required attribution.
+5. Audit the existing Exynos USB/PHY and Type-C implementation path before writing a DWC3 host driver.
+6. Independently verify display, USB input, and OS handoff on hardware before making any device-support claim.
 
 A source checkout check is not a build. A metadata/tree audit is not a full source-code audit. A build is not a successful device boot. A successful UEFI boot is not proof that Linux or Windows drivers are complete.
