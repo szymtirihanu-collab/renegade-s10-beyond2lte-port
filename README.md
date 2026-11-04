@@ -23,17 +23,17 @@ Windows 11 ARM64 is now the primary OS experiment for this port. The existing UE
 - [x] Document Android 16's relevance and limits
 - [x] Select Windows 11 ARM64 as the primary OS experiment
 - [x] Document Windows boot requirements and upstream-reported blockers
-- [ ] Confirm beyond2lte upstream licensing before copying or adapting source
+- [x] Record maintainer permission report for transient source use; exact redistribution terms remain open
 - [ ] Confirm which Mu-Silicium revision the beyond2lte maintainer actually used
-- [ ] Reproduce a clean host-only build
+- [ ] Complete the candidate ARM64 host-only build
 - [ ] Record static validation and artifact hashes
 - [ ] Independently validate hardware boot and OS handoff
 
-See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [model profile](docs/MODEL.md), [USB/display source audit](docs/USB_DISPLAY_SOURCE_AUDIT.md), [Mu-Silicium dependency snapshot](docs/MU_SILICIUM_DEPENDENCIES.md), [cloud CI boundary](docs/CLOUD_CI.md), and [porting status](docs/PORTING_STATUS.md).
+See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [permission record](docs/UPSTREAM_PERMISSION.md), [model profile](docs/MODEL.md), [USB/display source audit](docs/USB_DISPLAY_SOURCE_AUDIT.md), [DWC3 host-driver design](docs/USB_DWC3_DRIVER_DESIGN.md), [Mu-Silicium dependency snapshot](docs/MU_SILICIUM_DEPENDENCIES.md), [cloud CI boundary](docs/CLOUD_CI.md), and [porting status](docs/PORTING_STATUS.md).
 
 ## Safe scope
 
-This repository currently contains documentation and read-only validation only. It does not contain a validated firmware image. It does not create partition tables, generate flash packages, or provide device-writing instructions. Do not treat a successful source check or host build as proof that firmware is safe or bootable on a handset.
+This repository contains documentation, source-audit scripts, and a manual host-build workflow. The candidate build runs in a temporary GitHub runner and does not publish its image. No validated firmware image is provided. The project does not create partition tables, generate flash packages, or provide device-writing instructions. A successful host build is not proof that firmware is safe or bootable on a handset.
 
 ## Verify a local upstream checkout
 
