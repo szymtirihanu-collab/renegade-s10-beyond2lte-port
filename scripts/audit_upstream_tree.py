@@ -75,6 +75,7 @@ def main() -> int:
         if path.lower() in ("license", "license.md", "license.txt", "copying")
     ]
     license_declared = repo.get("license") is not None or bool(license_paths)
+    permission_status = UPSTREAM.get("permission_status", "no maintainer permission recorded")
 
     print("UPSTREAM TREE AUDIT: OK")
     print(f"Repository: {REPOSITORY}")
@@ -86,8 +87,9 @@ def main() -> int:
     ))
     print("License metadata: " + (
         "declared / license file present" if license_declared
-        else "NOT DECLARED — source reuse and build integration remain gated"
+        else "not declared in repository metadata or root tree"
     ))
+    print(f"Permission record: {permission_status}")
     print("Scope: metadata and path inventory only; no source checkout or build.")
     return 0
 
