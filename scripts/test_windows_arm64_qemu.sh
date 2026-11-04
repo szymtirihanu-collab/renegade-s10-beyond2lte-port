@@ -63,7 +63,7 @@ if [[ ! -e "$TARGET" ]]; then
 else
   # Grow an existing target if it is below the Windows Setup minimum. Never shrink it.
   CURRENT_BYTES="$("$QEMU_IMG" info --output=json "$TARGET" | python3 -c 'import json,sys; print(json.load(sys.stdin)["virtual-size"])')"
-  REQUIRED_BYTES="$("$QEMU_IMG" measure --output=json -f qcow2 -O qcow2 "$TARGET" "$TARGET_SIZE" | python3 -c 'import json,sys; print(json.load(sys.stdin)["required-size"])')"
+  REQUIRED_BYTES="$(python3 -c 'import re,sys; s=sys.argv[1].strip().upper(); m=re.fullmatch(r"([0-9]+(?:\\.[0-9]+)?)([KMGTP]?)",s); assert m, "Unsupported QEMU_TARGET_SIZE"; print(int(float(m.group(1)) * (1024 ** (" K M G T P".split().index(m.group(2))))))' "$TARGET_SIZE")"
   if (( CURRENT_BYTES < REQUIRED_BYTES )); then
     echo "Expanding existing QEMU target disk to at least $TARGET_SIZE ..."
     "$QEMU_IMG" resize -f qcow2 "$TARGET" "$TARGET_SIZE"
