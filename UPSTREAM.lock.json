@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "device": {
+    "model": "SM-G975F",
+    "codename": "beyond2lte",
+    "soc": "Samsung Exynos 9820",
+    "architecture": "AArch64",
+    "android_environment": "Android 16 (Evolution X, user-reported)"
+  },
+  "uefi_upstream": {
+    "repository": "https://github.com/orhunnx/beyond2lte-uefi",
+    "ref": "master",
+    "commit": "f122c7024c5eeef2c8c78dfd08c62708c9ef823d",
+    "commit_date": "2026-08-27T21:53:33Z",
+    "license_status": "No repository license declared; no LICENSE file verified",
+    "vendored": false,
+    "reason_not_vendored": "Do not copy or redistribute upstream source until its licensing is clarified."
+  },
+  "renegade_reference": {
+    "repository": "https://github.com/edk2-porting/edk2-msm",
+    "role": "Architectural reference only; Qualcomm-specific platform code is not the SM-G975F implementation."
+  },
+  "scope": {
+    "host_only_validation": true,
+    "build_artifacts_committed": false,
+    "device_flash_or_partition_operations": false,
+    "hardware_validation": false
+  }
+}
