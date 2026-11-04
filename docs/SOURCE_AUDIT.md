@@ -53,9 +53,15 @@ Do not rely on a moving default branch for a reproducible build. The local overl
 - A successful UEFI build does not imply Windows or Linux hardware support.
 - The candidate's Windows notes describe unresolved early-boot/reset problems; they do not establish a usable Windows port.
 
+## USB and display findings
+
+The pinned DTB sources describe an Exynos DWC3 dual-role USB controller, USB2/USB3 PHY bindings, and an OTG role in the board revision overlay. They also describe an Exynos DisplayPort controller and connector mux properties. The board's UEFI DSC/FDF does not list explicit DWC3/xHCI/USB host or DisplayPort DXE modules. The upstream engineering notes explicitly report that the UEFI USB driver path is absent. See [USB/display source audit](USB_DISPLAY_SOURCE_AUDIT.md).
+
+Mu-Silicium provides generic EDK II USB bus and keyboard modules in some other device configurations, but those configurations pair them with Qualcomm-specific xHCI components. This is not a ready-made Exynos DWC3 driver. See [Mu-Silicium dependency snapshot](MU_SILICIUM_DEPENDENCIES.md).
+
 ## Next engineering milestone
 
-The next safe milestone is a **licensed, host-only source review and reproducible build**. Compare the candidate's actual platform package with upstream Mu-Silicium, inspect licensing, pin every dependency, and run the documented static/build checks without connecting or modifying the phone.
+The next safe milestone is a **licensed, host-only source review and reproducible build**. Confirm the exact Mu-Silicium revision used by the device upstream, inspect dependency licenses, pin every build input, and run documented static/build checks without connecting or modifying the phone.
 
 Do not import opaque binaries or copy code without checking its license and provenance. Do not treat Android recovery trees as UEFI platform packages.
 
