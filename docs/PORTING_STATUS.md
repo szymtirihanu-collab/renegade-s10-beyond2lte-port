@@ -26,6 +26,8 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 
 ## Completed in this repository
 
+- Selected Windows 11 ARM64 as the primary OS experiment and documented Microsoft's platform requirements, upstream-reported progress, and remaining blockers.
+
 1. Confirmed exact target model and architecture.
 2. Identified the existing Exynos-specific UEFI project rather than attempting to reuse Qualcomm board code.
 3. Pinned the reviewed upstream commit in `UPSTREAM.lock.json`.
