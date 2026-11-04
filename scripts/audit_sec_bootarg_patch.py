@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the SEC boot-argument patch applies to the pinned Mu-Silicium sources."""
+"""Apply and statically audit the SEC x0 capture change against pinned sources."""
 from __future__ import annotations
 
 import json
@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCK = json.loads((ROOT / "UPSTREAM.lock.json").read_text(encoding="utf-8"))
 PIN = LOCK["mu_silicium_reference_snapshot"]
 REPO = PIN["repository"].removeprefix("https://github.com/").removesuffix(".git")
-PATCH = ROOT / "patches/0002-sec-capture-bootarg-and-bound-x0.patch"
+APPLIER = ROOT / "scripts/apply_sec_bootarg_capture.py"
 AUDITOR = ROOT / "scripts/audit_sec_bootarg_capture.py"
 SOURCES = (
     "Silicon/Silicium/SiliciumPkg/Sec/AArch64/ModuleEntryPoint.S",
@@ -36,17 +36,9 @@ def main() -> int:
             target = root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(fetch(relative), encoding="utf-8")
-        subprocess.run(["git", "init", "-q", str(root)], check=True)
-        subprocess.run(["git", "-C", str(root), "add", *SOURCES], check=True)
-        subprocess.run(
-            ["git", "-C", str(root), "-c", "user.name=Audit", "-c",
-             "user.email=audit@example.invalid", "commit", "-qm", "baseline"],
-            check=True,
-        )
-        subprocess.run(["git", "-C", str(root), "apply", "--check", str(PATCH)], check=True)
-        subprocess.run(["git", "-C", str(root), "apply", str(PATCH)], check=True)
+        subprocess.run([sys.executable, str(APPLIER), str(root)], check=True)
         subprocess.run([sys.executable, str(AUDITOR), str(root)], check=True)
-    print(f"Patch applies cleanly to {REPO}@{PIN['commit']}.")
+    print(f"Source transformation and audit passed for {REPO}@{PIN['commit']}.")
     return 0
 
 
