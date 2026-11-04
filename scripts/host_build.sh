@@ -32,6 +32,20 @@ fi
 echo "== Applying device overlay in the temporary build workspace =="
 cp -a "$WORK/beyond2lte-upstream/mu-silicium-overlay/." "$WORK/Mu-Silicium/"
 
+# The upstream build instructions require a second overlay: its Samsung SoC
+# ACPI sources live outside mu-silicium-overlay. DeviceBuild.py also lists
+# Platforms/Samsung as a package path, so create that package directory even
+# though this port currently has no Samsung ACPI platform tables there.
+ACPI_OVERLAY="$WORK/beyond2lte-upstream/silicium-acpi-overlay"
+test -d "$ACPI_OVERLAY/SoCs/Samsung"
+mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/SoCs"
+cp -a "$ACPI_OVERLAY/SoCs/." "$WORK/Mu-Silicium/Silicium-ACPI/SoCs/"
+mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/Platforms/Samsung"
+
+# Fail early with a useful message if the package search paths drift again.
+test -d "$WORK/Mu-Silicium/Silicium-ACPI/SoCs/Samsung"
+test -d "$WORK/Mu-Silicium/Silicium-ACPI/Platforms/Samsung"
+
 echo "== Installing host build dependencies =="
 sudo apt-get update
 sudo apt-get install -y \
