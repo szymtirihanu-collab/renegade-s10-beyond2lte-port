@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -64,7 +63,7 @@ def main() -> int:
         return 1
 
     driver_pattern = re.compile(
-        r"(?im)^\\s*INF\\s+[^#\\n]*(?:usb|xhci|dwc3|displayport|dpdxe)[^#\\n]*\\.inf"
+        r"(?im)^\s*INF\s+[^#\n]*(?:usb|xhci|dwc3|displayport|dpdxe)[^#\n]*\.inf"
     )
     dsc_driver_entries = driver_pattern.findall(dsc)
     fdf_driver_entries = driver_pattern.findall(fdf)
