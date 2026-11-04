@@ -26,3 +26,5 @@ jobs:
         run: python scripts/audit_upstream_tree.py
       - name: Audit pinned USB and display source markers
         run: python scripts/audit_io_support.py
+      - name: Audit pinned USB and display source markers
+        run: python scripts/audit_io_support.py
