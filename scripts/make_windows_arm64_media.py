@@ -122,8 +122,10 @@ def main():
         print("[4/6] Copying Windows setup files")
         run(["mcopy", "-s", "-i", str(esp), *map(str, sorted(stage.iterdir())), "::/"])
         print("[5/6] Verifying copied boot files")
-        listing = run(["mdir", "-i", str(esp), "::/EFI/BOOT"], capture=True).stdout
-        if "BOOTAA64.EFI" not in listing.upper(): raise RuntimeError("BOOTAA64.EFI missing after copy")
+        listing = run(["mdir", "-b", "-i", str(esp), "::/EFI/BOOT"], capture=True).stdout
+        entries = {Path(line.strip()).name.casefold() for line in listing.splitlines() if line.strip()}
+        if "bootaa64.efi" not in entries:
+            raise RuntimeError("BOOTAA64.EFI missing after copy; EFI/BOOT entries reported by mtools: " + repr(listing))
         run(["mdir", "-i", str(esp), "::/SOURCES"], capture=True)
         fwcopy = None
         if a.uefi_image:
