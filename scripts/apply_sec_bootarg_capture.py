@@ -99,12 +99,6 @@ IsBootArgument0InKnownDram (
       continue;
     }
 
-    if ((Regions[Index].Address > MAX_UINTN) ||
-        (Regions[Index].Length > MAX_UINTN))
-    {
-      continue;
-    }
-
     RegionBase   = (UINTN)Regions[Index].Address;
     RegionLength = (UINTN)Regions[Index].Length;
     if ((RegionLength < 40) || (RegionBase > MAX_UINTN - RegionLength)) {
