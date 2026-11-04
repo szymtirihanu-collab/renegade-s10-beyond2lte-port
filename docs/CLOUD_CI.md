@@ -13,13 +13,21 @@ The `.github/workflows/source-audit.yml` workflow uses GitHub's hosted Linux ARM
 
 The workflow does **not** execute upstream code, clone the firmware source tree, build firmware, create a flashable image, or communicate with a phone. It is a provenance and source-inventory check, not a firmware build.
 
-## Why the firmware build is not enabled yet
+## Candidate host build
 
-The candidate beyond2lte upstream repository currently has no declared repository license and no root license file was found in the pinned tree. Public visibility does not itself grant permission to copy, adapt, or redistribute source. This project therefore keeps upstream implementation files out of this repository and does not automate their import.
+The maintainer's permission to use the beyond2lte implementation has been reported by the downstream repository owner and recorded in [UPSTREAM_PERMISSION.md](UPSTREAM_PERMISSION.md). The repository still has no declared SPDX license; the permission report is not treated as a public redistribution license. Source is fetched transiently at build time, not mirrored into this repository.
+
+A manual-only workflow, `.github/workflows/host-build.yml`, now performs a candidate RELEASE build on `ubuntu-24.04-arm`. It checks out the exact beyond2lte commit and the pinned Mu-Silicium snapshot with recursive submodules, applies the upstream overlay in a temporary runner directory, and invokes the project's documented build entry point. It does not upload the generated image, publish source, flash a device, or access a handset.
+
+**Important:** the Mu-Silicium snapshot is a reproducibility candidate, not yet confirmed as the exact revision used by the beyond2lte maintainer. A green build would validate this candidate combination only.
+
+## Permission and dependency boundaries
+
+The beyond2lte upstream repository has no declared repository license and no root license file was found in the pinned tree. The owner reports that the maintainer has permitted use of the implementation. This permission report is recorded separately; exact conditions for redistribution of source and binaries still need to be documented. The workflow uses the source transiently and does not mirror it.
 
 The Mu-Silicium parent repository reports BSD-2-Clause, but some of its submodules return `NOASSERTION` or no detected license metadata. Also, the device-specific upstream build instructions do not pin the Mu-Silicium commit they used. A separate reference snapshot and its submodule gitlinks are recorded, but they are not claimed to be the tested build inputs. See [MU_SILICIUM_DEPENDENCIES.md](MU_SILICIUM_DEPENDENCIES.md).
 
-Before enabling a build job, obtain a clear license or written permission for the beyond2lte overlay, confirm the actual Mu-Silicium revision used, and then:
+Before distributing adapted source or firmware binaries, document the exact permission conditions, confirm the actual Mu-Silicium revision used, and review dependency notices. The candidate build is already enabled as a manual, non-publishing CI job.
 
 1. Record the approved license/permission and scope.
 2. Review dependency licenses and pin every recursive submodule to immutable commit IDs.
