@@ -32,12 +32,22 @@ fi
 echo "== Applying device overlay in the temporary build workspace =="
 cp -a "$WORK/beyond2lte-upstream/mu-silicium-overlay/." "$WORK/Mu-Silicium/"
 
-echo "== Installing the pinned project's host build dependencies =="
+echo "== Installing host build dependencies =="
+sudo apt-get update
+sudo apt-get install -y \
+  git mono-devel build-essential make lld uuid-dev nasm \
+  gcc-aarch64-linux-gnu python3 python3-venv python3-pip \
+  gettext locales gnupg ca-certificates clang llvm curl
+
 cd "$WORK/Mu-Silicium"
-CI_BUILD=false bash ./setup_env.sh -p apt
+python3 -m venv "$WORK/venv"
+. "$WORK/venv/bin/activate"
+python -m pip install --upgrade pip
+python -m pip install -r pip-requirements.txt
+export CLANGPDB_AARCH64_PREFIX=aarch64-linux-gnu-
 
 echo "== Compiling beyond2lte RELEASE UEFI =="
-python3 ./build_uefi.py -d beyond2lte -r RELEASE -c
+python ./build_uefi.py -d beyond2lte -r RELEASE -c
 
 FD="$WORK/Mu-Silicium/Build/beyond2ltePkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd"
 IMAGE="$WORK/Mu-Silicium/Mu-beyond2lte.img"
