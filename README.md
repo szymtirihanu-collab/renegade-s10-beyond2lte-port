@@ -33,11 +33,11 @@ See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [permission reco
 
 ## Windows ARM64 installation-media packager
 
-A host-side packager is available at [`scripts/make_windows_arm64_media.py`](scripts/make_windows_arm64_media.py). Its default ISO input is `~/Windows11_Client_arm64_en-us_26300_9457.iso`; it validates the ARM64 EFI loader, prepares FAT32 setup media, and writes an integrity report. See [`docs/WINDOWS_MEDIA_PACKAGER.md`](docs/WINDOWS_MEDIA_PACKAGER.md). This creates installation media only, not a proven handset boot chain.
+A host-side media packager is available at [`scripts/make_windows_arm64_media.py`](scripts/make_windows_arm64_media.py). The AIO builder [`scripts/build_windows11_beyond2lte_aio.py`](scripts/build_windows11_beyond2lte_aio.py) combines the Windows ARM64 ISO, an existing `Mu-beyond2lte.img` candidate, and a GPT disk image containing a FAT32 EFI System Partition. See [`docs/WINDOWS_MEDIA_PACKAGER.md`](docs/WINDOWS_MEDIA_PACKAGER.md) and [`docs/WINDOWS_AIO_BUNDLE.md`](docs/WINDOWS_AIO_BUNDLE.md). This is a host-side media bundle, not a complete phone storage layout or proven handset boot chain.
 
 ## Safe scope
 
-This repository contains documentation, source-audit scripts, and a manual host-build workflow. The candidate build runs in a temporary GitHub runner and does not publish its image. No validated firmware image is provided. The project does not create partition tables, generate flash packages, or provide device-writing instructions. A successful host build is not proof that firmware is safe or bootable on a handset.
+This repository contains documentation, source-audit scripts, and a manual host-build workflow. The candidate build runs in a temporary GitHub runner and does not publish its image. No validated firmware image is provided. The project can create a GPT partition table inside a host-side Windows installation-media image. It does not repartition the phone, generate a device flash package, or provide device-writing instructions. A successful host build is not proof that firmware is safe or bootable on a handset.
 
 ## Verify a local upstream checkout
 
