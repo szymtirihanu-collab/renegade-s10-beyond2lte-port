@@ -4,11 +4,12 @@
 
 This repository investigates whether a Renegade-style EDK2 UEFI environment can be brought up on the **Samsung Galaxy S10+ Exynos variant (beyond2lte)**.
 
-## Target
+## Confirmed target
 
 | Property | Target |
 |---|---|
 | Device | Samsung Galaxy S10+ |
+| Exact model supplied by owner | **SM-G975F** |
 | Codename | `beyond2lte` |
 | SoC | Samsung Exynos 9820 |
 | CPU architecture | AArch64 |
@@ -16,7 +17,7 @@ This repository investigates whether a Renegade-style EDK2 UEFI environment can 
 | GPU | ARM Mali-G76 MP12 |
 | Android kernel baseline | Samsung Exynos 9820 vendor kernel, 4.14 |
 
-The Korean variant uses the related codename `beyond2lteks`; it is not assumed compatible with this target.
+The target is the international Exynos SM-G975F. The Korean SM-G975N uses the related codename `beyond2lteks` and is not the target. See [MODEL.md](docs/MODEL.md) for the model-specific scope and remaining unknowns.
 
 ## Important architecture difference
 
@@ -27,8 +28,9 @@ This repository therefore starts with platform research and a validation plan. I
 ## Current state
 
 - [x] Target identity and architecture documented
+- [x] Exact target model supplied: SM-G975F
 - [x] Renegade/Qualcomm versus Samsung/Exynos differences documented
-- [ ] Confirm exact model and bootloader state on a development handset
+- [ ] Confirm handset's bootloader state and firmware revision
 - [ ] Collect and document trustworthy Exynos 9820 hardware references
 - [ ] Establish a reproducible EDK2 build environment
 - [ ] Identify a supported and auditable boot hand-off path
@@ -37,7 +39,7 @@ This repository therefore starts with platform research and a validation plan. I
 - [ ] Add storage, display and USB drivers
 - [ ] Validate boot on hardware with recovery and rollback procedures
 
-See [PORTING_STATUS.md](docs/PORTING_STATUS.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md), and [REFERENCES.md](docs/REFERENCES.md).
+See [MODEL.md](docs/MODEL.md), [PORTING_STATUS.md](docs/PORTING_STATUS.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md), and [REFERENCES.md](docs/REFERENCES.md).
 
 ## Safety and device integrity
 
