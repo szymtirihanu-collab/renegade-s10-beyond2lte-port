@@ -71,6 +71,31 @@ path.write_text(text)
 print("Removed two unimplemented, unused legacy library mappings in temporary build tree.")
 PY
 
+# B2LGoster stopped displaying the memory-map fragment count (Parca), but
+# the counter's declaration and updates remained. Clang's -Werror rejects
+# that dead local. Remove only the now-unused counter in the temporary tree.
+B2L_GOSTER="$WORK/Mu-Silicium/Platforms/Samsung/beyond2ltePkg/Applications/B2LGoster/B2LGoster.c"
+test -f "$B2L_GOSTER"
+python3 - "$B2L_GOSTER" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text()
+replacements = (
+    ("    UINT32                 Parca;\n", ""),
+    ("    Parca  = 0;\n", ""),
+    ("          Parca++;\n", ""),
+)
+for old, new in replacements:
+    count = text.count(old)
+    if count != 1:
+        raise SystemExit(f"Expected exactly one occurrence of {old.strip()!r} in {path}, found {count}")
+    text = text.replace(old, new, 1)
+path.write_text(text)
+print("Removed obsolete Parca counter from temporary B2LGoster source.")
+PY
+
 echo "== Installing host build dependencies =="
 sudo apt-get update
 sudo apt-get install -y \
