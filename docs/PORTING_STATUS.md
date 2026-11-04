@@ -55,6 +55,9 @@ A source checkout check is not a build. A metadata/tree audit is not a full sour
 
 ## UFS write-path correction
 
+The pinned upstream `STATUS.md` now resolves the apparent `LUN 2 / LBA 0` failure: `map -r` showed GPT partitions on LUN 0 and LUN 3, while LUN 2 has no GPT partition and is a protected Samsung boot LU. `bootmgfw` attempts a write there, the device rejects it, and boot continues. This is expected protection behavior, not a failed write to the Windows ESP or ordinary data LU. Normal nonzero-LBA writes and FAT metadata updates are recorded as successful. The remaining driver correction is accurate `BlockIo.Media.ReadOnly` reporting from the Unit Descriptor's `bLUWriteProtect` field. See [`UFS_WRITE_AUDIT.md`](UFS_WRITE_AUDIT.md). The reviewed patch is applied in the temporary host-build tree; CI compilation is pending.
+
+
 A source-level audit of the pinned upstream DEBUG evidence is documented in [`UFS_WRITE_AUDIT.md`](UFS_WRITE_AUDIT.md). The earlier blanket DMA-cache-coherency diagnosis is not supported: an instrumented nonzero-LBA UFS write and FAT directory metadata update succeeded. A later Windows-triggered write to LUN 2, LBA 0 was rejected by the UFS target (`OCS=0x07`, SCSI response `0x01`). The failing LUN-to-partition mapping remains unresolved. Do not treat `Media.ReadOnly = FALSE` as proof that a LU is writable; upstream notes that this field is currently forced false rather than derived from the LU write-protect descriptor. No speculative cache patch or device-write test is authorized by this audit.
 
 ## Latest source-level I/O findings
