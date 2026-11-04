@@ -18,17 +18,18 @@ Windows 11 ARM64 is now the primary OS experiment for this port. The existing UE
 - [x] Identify existing Exynos 9820 UEFI implementation
 - [x] Pin reviewed upstream commit in [UPSTREAM.lock.json](UPSTREAM.lock.json)
 - [x] Add read-only source provenance checker
-- [x] Add hosted ARM64 metadata/tree audit workflow
+- [x] Add hosted ARM64 metadata, USB, and display source-audit workflow
+- [x] Pin a separate Mu-Silicium reference snapshot and all six submodule gitlinks
 - [x] Document Android 16's relevance and limits
 - [x] Select Windows 11 ARM64 as the primary OS experiment
 - [x] Document Windows boot requirements and upstream-reported blockers
-- [ ] Confirm upstream licensing before copying or adapting source
-- [ ] Pin Mu-Silicium and every required submodule revision
+- [ ] Confirm beyond2lte upstream licensing before copying or adapting source
+- [ ] Confirm which Mu-Silicium revision the beyond2lte maintainer actually used
 - [ ] Reproduce a clean host-only build
 - [ ] Record static validation and artifact hashes
 - [ ] Independently validate hardware boot and OS handoff
 
-See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [model profile](docs/MODEL.md), [source audit](docs/SOURCE_AUDIT.md), [cloud CI boundary](docs/CLOUD_CI.md), and [porting status](docs/PORTING_STATUS.md).
+See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [model profile](docs/MODEL.md), [USB/display source audit](docs/USB_DISPLAY_SOURCE_AUDIT.md), [Mu-Silicium dependency snapshot](docs/MU_SILICIUM_DEPENDENCIES.md), [cloud CI boundary](docs/CLOUD_CI.md), and [porting status](docs/PORTING_STATUS.md).
 
 ## Safe scope
 
