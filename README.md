@@ -8,6 +8,10 @@ A device-specific Exynos UEFI implementation already exists: [orhunnx/beyond2lte
 
 The official Renegade Project's published EDK2 targets Qualcomm Snapdragon platforms. Its Qualcomm board code is not directly portable to this Exynos device. See [Renegade's FAQ](https://renegade-project.tech/en/faq) and [supported devices](https://renegade-project.tech/en/devices).
 
+## Windows 11 ARM64 target
+
+Windows 11 ARM64 is now the primary OS experiment for this port. The existing UEFI upstream reports Windows Boot Manager and kernel entry, but also an early-userspace reset; these claims have not been independently reproduced here. The S10+ is not a Microsoft-supported Windows 11 PC, and its hardware has not been shown to meet the published requirements. See [WINDOWS11_ARM64_PLAN.md](docs/WINDOWS11_ARM64_PLAN.md) for the requirements, evidence matrix, and work sequence.
+
 ## Current status
 
 - [x] Confirm target model: SM-G975F / `beyond2lte`
@@ -15,6 +19,8 @@ The official Renegade Project's published EDK2 targets Qualcomm Snapdragon platf
 - [x] Pin reviewed upstream commit in [UPSTREAM.lock.json](UPSTREAM.lock.json)
 - [x] Add read-only source provenance checker
 - [x] Document Android 16's relevance and limits
+- [x] Select Windows 11 ARM64 as the primary OS experiment
+- [x] Document Windows boot requirements and upstream-reported blockers
 - [ ] Confirm upstream licensing before copying or adapting source
 - [ ] Pin Mu-Silicium and every required submodule revision
 - [ ] Reproduce a clean host-only build
