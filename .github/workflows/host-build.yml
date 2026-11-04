@@ -7,6 +7,7 @@ on:
       - ".github/workflows/host-build.yml"
       - "scripts/host_build.sh"
       - "scripts/audit_firmware_entry.py"
+      - "patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch"
       - "UPSTREAM.lock.json"
   workflow_dispatch:
 
