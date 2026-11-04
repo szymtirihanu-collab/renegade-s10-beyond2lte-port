@@ -10,7 +10,7 @@ This is a research-stage feasibility project for the **Samsung Galaxy S10+ SM-G9
 |---|---|---|
 | Device identity | Confirmed: SM-G975F | Verify against the handset's own model information before any future device-specific test |
 | CPU/SoC | Documented from public device references | Samsung Exynos 9820 technical documentation |
-| EDK2 platform package | Not started | Platform specification and upstream code review |
+| Existing SM-G975F UEFI candidate | Identified; source audit started | Review actual source tree, license, pinned revisions, and reproduce a host build |
 | Boot entry / hand-off | Unknown | Verified Samsung boot firmware behavior and supported boot method |
 | DRAM map | Unknown | Reliable boot-time memory map from the target |
 | GIC / timer | Unknown | Exynos 9820 integration documentation and kernel sources |
@@ -23,12 +23,12 @@ This is a research-stage feasibility project for the **Samsung Galaxy S10+ SM-G9
 
 ## Immediate research tasks
 
-1. Record the handset's firmware build and bootloader state as reported by normal device information screens; do not infer these from the model number.
-2. Review Samsung's public Exynos 9820 kernel source and device tree for hardware topology.
-3. Identify the earliest boot stage that can be observed without modifying partitions.
-4. Establish whether a third-party UEFI payload can be launched through a documented, supported path. Do not assume the Qualcomm Renegade chain applies.
-5. Build a minimal EDK2 AArch64 host/toolchain environment independently of device boot.
-6. Only after the boot hand-off is understood, define the platform package and implement initialization in small, reviewable steps.
+1. Audit the existing [SM-G975F UEFI candidate](EXISTING_UEFI_PORT_REVIEW.md) and its [source/build notes](SOURCE_AUDIT.md); pin all repositories and submodules to exact commits.
+2. Check the candidate's source licensing and compare its platform overlay with the matching Mu-Silicium upstream revision.
+3. Reproduce a clean host-only build and static checks without connecting to or modifying a handset.
+4. Record the handset's firmware build and bootloader state from normal device information screens; do not infer these from the model number.
+5. Compare the candidate's hardware assumptions with public Exynos 9820 kernel/device-tree sources. Treat board revision and memory details as unknown until confirmed.
+6. Only after source provenance and build reproducibility are established, decide whether this repository should be a downstream overlay, fork, or patch series.
 
 ## Acceptance gates
 
