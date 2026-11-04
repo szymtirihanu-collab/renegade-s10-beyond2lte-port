@@ -27,69 +27,60 @@ Implications:
 - UEFI GOP/framebuffer output is not a Windows Mali-G76 graphics driver. Windows may need a separate display driver for continued native-resolution output and acceleration.
 - The current upstream result is maintainer-reported and has not been reproduced by this repository.
 
-### USB-C external display: second display path
+### USB-C external display: hardware path is described, UEFI path is missing
 
-The SM-G975F hardware supports wired video output over USB-C (DisplayPort/HDMI adapters) according to device specifications. For a UEFI implementation, this is not simply another framebuffer address.
+The pinned upstream device-tree sources describe a Samsung Exynos DisplayPort controller and board-revision overlay properties for the DisplayPort SBU switch and USB connector selection.
 
-Work areas to investigate from source and device-tree evidence:
+This is stronger evidence than a generic phone specification, but it still does not prove UEFI output. The board's UEFI DSC/FDF does not list an explicit DisplayPort DXE driver, and this project has not validated external-monitor output.
 
-- USB-C port controller and Type-C orientation / role state.
-- USB Power Delivery negotiation and DisplayPort Alt Mode entry.
-- DisplayPort lane assignment, mux / PHY setup, clocks, resets and power rails.
-- External monitor EDID discovery and mode selection.
-- A UEFI graphics output implementation for the external connector, plus a policy for internal and external displays.
+Remaining areas include Type-C/PD negotiation, Alt Mode entry, lane routing, mux/PHY setup, clocks/resets/power, EDID discovery, and a UEFI graphics output implementation. These are separate from the existing internal framebuffer.
 
-The phone's stock Android/Samsung display stack supporting DeX or wired display does not prove that the UEFI port has the required Type-C, PD, mux, PHY, or DP driver code. Keep this as a separate milestone after the internal panel path is stable.
+### USB OTG keyboard and mouse: hardware path exists, UEFI host driver is missing
 
-### USB OTG keyboard and mouse: critical input milestone
+The pinned device-tree sources describe:
 
-The upstream UEFI status currently marks USB as unavailable / no USB driver. OTG keyboard and mouse therefore require real USB host support; they will not work just because USB-C charging or data works in Android.
+- An Exynos USB dual-role controller with a Synopsys DWC3 child node.
+- USB2 and USB3 PHY bindings.
+- An OTG role in the beyond2lte revision overlay.
 
-Work areas:
+The upstream engineering notes explicitly say the current UEFI board configuration has no DWC3/xHCI/USB bus DXE driver. The README marks USB unavailable. This means the hardware is described for the Android/Linux stack, but the UEFI implementation does not yet provide the host-controller path needed for a wired keyboard or mouse.
 
-- Identify the exact Exynos USB controller instance(s) from the pinned board DTB and kernel sources.
-- Determine the controller generation and whether it is xHCI-compatible.
-- Implement or integrate the host-controller driver and USB bus enumeration.
-- Handle Type-C host/device role selection, VBUS power, orientation and required PHY/clock/reset sequencing.
-- Add USB HID keyboard and mouse drivers and expose keyboard input through the UEFI input protocol.
-- Describe the controller and resources correctly to Windows through ACPI so Windows ARM64 can bind its inbox xHCI driver where compatible.
+Work areas remain:
 
-A Windows inbox xHCI driver can support a standards-compliant host controller, but firmware must still provide correct platform power, clocks, pinmux and ACPI resources. Microsoft documents the ACPI identifiers and resources Windows uses for USB host controllers. This is not proof that this particular Exynos USB block is already supported.
+- Review the controller/PHY and Type-C role dependencies from source evidence.
+- Identify a suitable Exynos DWC3 host-controller implementation or determine what new UEFI integration is required.
+- Integrate a host-controller driver with USB enumeration and HID input.
+- Describe the controller and platform resources correctly to Windows through ACPI.
+
+Mu-Silicium has generic EDK II USB bus and keyboard modules in other platform configurations, but the examples pair them with Qualcomm-specific xHCI components. Those components are not an Exynos driver and are not interchangeable.
+
+### Windows driver boundary
+
+A standards-compliant xHCI controller may be supported by a Windows inbox driver, but the platform must still expose correct ACPI resources and working clocks, PHY, power, and role configuration. The device-tree node is not a Windows ACPI description and does not guarantee Windows will bind a driver.
 
 ## Recommended order
 
 | Priority | Milestone | Reason |
 |---|---|---|
 | P0 | Preserve and validate existing internal framebuffer | Already reported working; smallest scope |
-| P1 | Read-only source audit of USB controller, Type-C/PD and PHY | Establish actual hardware topology before writing code |
+| P1 | Review Exynos DWC3 / USB PHY / Type-C source integration | Hardware path is described; UEFI host driver is missing |
 | P2 | UEFI USB host + HID keyboard/mouse | Gives input during boot and helps Windows setup |
-| P3 | Windows ACPI description for USB host | Allows Windows to enumerate a standard host controller |
-| P4 | USB-C DisplayPort Alt Mode | Separate, more complex display path |
+| P3 | Windows ACPI description for USB host | Allows Windows to enumerate a supported host controller |
+| P4 | USB-C DisplayPort Alt Mode | DTB describes the controller and mux properties, but UEFI output driver is missing |
 | P5 | Windows display driver / graphics acceleration | Separate from UEFI framebuffer output |
 
-The user's wording allows either the internal panel or external display initially. The engineering plan starts with the internal panel because upstream already reports it working. USB OTG keyboard/mouse is the next high-value feature. External DP Alt Mode remains a distinct follow-on milestone.
+## Cloud development
 
-## openSUSE host environment
+The repository now has a hosted ARM64 source-audit workflow. It checks the pinned upstream metadata, selected USB/display source markers, and a separately pinned Mu-Silicium reference snapshot. It does not build firmware yet because the beyond2lte overlay has no declared license.
 
-The user has confirmed they are working on openSUSE. The next host-side phase is source review and a reproducible build environment.
-
-Before selecting packages or writing distro-specific setup instructions, record the exact openSUSE release and architecture. Keep all initial work host-side: source checkout, dependency inventory, build, static checks, and artifact hashes. Do not connect a handset or perform device-writing operations as part of this phase.
-
-## References
-
-- [beyond2lte UEFI upstream README](https://github.com/orhunnx/beyond2lte-uefi)
-- [beyond2lte UEFI upstream status](https://github.com/orhunnx/beyond2lte-uefi/blob/master/STATUS.md)
-- [beyond2lte UEFI hardware notes](https://github.com/orhunnx/beyond2lte-uefi/blob/master/HARDWARE.md)
-- [Microsoft: USB host controllers and devices in ACPI](https://learn.microsoft.com/en-us/windows-hardware/drivers/bringup/other-acpi-namespace-objects)
-- [Microsoft: UEFI requirements for Windows platforms](https://learn.microsoft.com/en-us/windows-hardware/drivers/bringup/uefi-requirements-that-apply-to-all-windows-platforms)
-- [Samsung Galaxy S10+ wired display and OTG specifications](https://www.notebookcheck.net/Samsung-Galaxy-S10-Smartphone-Review.410629.0.html)
+See [USB/display source audit](USB_DISPLAY_SOURCE_AUDIT.md), [Mu-Silicium dependencies](MU_SILICIUM_DEPENDENCIES.md), and [cloud CI boundary](CLOUD_CI.md).
 
 ## Evidence rules
 
 Label every feature as one of:
 - **Upstream-reported:** described by the upstream maintainer.
 - **Source-audited:** implementation and device description reviewed in source.
-- **Host-validated:** built or checked on openSUSE without a handset.
+- **Host-validated:** built or checked on openSUSE or hosted CI without a handset.
 - **Device-validated:** directly observed on an SM-G975F.
 
 Do not upgrade a feature's status without the corresponding evidence.
