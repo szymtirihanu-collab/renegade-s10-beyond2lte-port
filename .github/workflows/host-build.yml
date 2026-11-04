@@ -1,0 +1,32 @@
+name: Candidate beyond2lte host build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Native ARM64 runner; this is a host-only compile, not a device flash.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - name: Check out integration repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify immutable source and dependency pins
+        run: |
+          python scripts/check_docs.py
+          python scripts/audit_upstream_tree.py
+          python scripts/audit_mu_snapshot.py
+
+      - name: Build UEFI from pinned sources (no device connected)
+        env:
+          CI: "true"
+        run: bash scripts/host_build.sh
