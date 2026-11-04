@@ -36,3 +36,13 @@ jobs:
         env:
           CI: "true"
         run: bash scripts/host_build.sh
+
+      - name: Upload candidate firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: beyond2lte-uefi-candidate-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/beyond2lte-host-build/Mu-Silicium/Build/beyond2ltePkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd
+            ${{ runner.temp }}/beyond2lte-host-build/Mu-Silicium/Mu-beyond2lte.img
+          if-no-files-found: error
+          retention-days: 7
