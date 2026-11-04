@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-IMAGE="\${1:-$HOME/beyond2lte-windows11-aio/windows11-arm64-gpt-disk.img}"
-QEMU="\${QEMU:-qemu-system-aarch64}"
-CODE="\${UEFI_CODE:-}"
-VARS="\${UEFI_VARS:-}"
+IMAGE="${1:-$HOME/beyond2lte-windows11-aio/windows11-arm64-gpt-disk.img}"
+QEMU="${QEMU:-qemu-system-aarch64}"
+CODE="${UEFI_CODE:-}"
+VARS="${UEFI_VARS:-}"
 if [[ ! -f "$IMAGE" ]]; then
   echo "ERROR: media image not found: $IMAGE" >&2
   echo "Build it first with scripts/build_windows11_beyond2lte_aio.py" >&2
