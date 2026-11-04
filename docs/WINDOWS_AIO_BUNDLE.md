@@ -73,3 +73,25 @@ A successful AIO build therefore means only that the Windows ARM64 setup
 media and candidate UEFI launcher have been assembled and structurally
 checked. It is not evidence that the phone can boot Windows Setup or install
 Windows.
+
+## Immediate QEMU media test (not a handset test)
+
+Install the AArch64 QEMU system emulator and an AArch64 EDK2/AAVMF UEFI
+firmware package from openSUSE. Package names vary by repository; locate the
+firmware files with:
+
+```sh
+find /usr/share -type f \( -iname '*aarch64*code*.fd' -o -iname '*aarch64*vars*.fd' -o -iname 'AAVMF_CODE.fd' -o -iname 'AAVMF_VARS.fd' \) 2>/dev/null
+```
+
+After building the AIO bundle, run:
+
+```sh
+bash scripts/test_windows_arm64_qemu.sh "$HOME/beyond2lte-windows11-aio/windows11-arm64-gpt-disk.img"
+```
+
+If firmware files are stored elsewhere, set `UEFI_CODE` and `UEFI_VARS`
+to their exact paths. This launches a generic QEMU ARM virtual machine. It
+tests whether the generated Windows ARM64 setup media starts under generic
+UEFI; it does not run the Samsung-specific `Mu-beyond2lte.img` and does not
+validate the Exynos handset boot chain.
