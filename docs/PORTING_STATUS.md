@@ -6,7 +6,7 @@ Last reviewed: 2026-11-04
 
 The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, AArch64. The user reports Android 16 / Evolution X. An existing device-specific UEFI implementation has been identified and pinned; this repository is a downstream integration and reproducibility workspace.
 
-**A host-only candidate firmware build has succeeded (build #8); its artifact has been inspected and a reset-vector-to-SEC-TE entry-point audit has passed locally. No firmware has been tested on the handset, and no hardware boot has been independently verified here.**
+**A host-only candidate firmware build has succeeded (run 41887574178, commit 3f426bf). The current artifact ZIP, Android boot-image-v1 wrapper, embedded FD, FDT bounds and reset-vector-to-SEC-TE linkage have been independently inspected. No firmware has been tested on the handset, and no hardware boot has been independently verified here.**
 
 | Area | Status | Evidence / next step |
 |---|---|---|
@@ -21,7 +21,7 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 | External display UEFI support | Not present in board DSC/FDF | No explicit DisplayPort DXE driver; no external output validated |
 | Mu-Silicium base | Reference snapshot pinned | Exact main commit and six submodule gitlinks recorded; not proven to match upstream build |
 | Mu-Silicium license | BSD-2-Clause metadata | Individual submodule license review remains necessary |
-| Candidate host build | Build #8 succeeded; artifact uploaded | ARM64 CI build from pinned overlay/reference snapshot; dependency snapshot may differ from maintainer's original build. New build with automated entry-point audit is queued. |
+| Candidate host build | Run 41887574178 succeeded; artifact uploaded | ARM64 CI build from pinned overlay/reference snapshot; dependency snapshot may differ from maintainer's original build. Package and reset-vector audits pass; no hardware boot proof. |
 | Boot chain / handoff | Reset vector exactly matches SEC TE entry; SEC source requires EL1/EL2 | Exact handset bootloader entry level remains unknown; EL3 would loop. Verify boot-chain acceptance and recovery before any device test |
 | DRAM / memory map | Upstream-specific assumptions; not independently confirmed | Compare with reliable sources; do not infer from Android version |
 | Display / keys / UFS | Upstream reports support | Reproduce and distinguish reported status from independent validation |
