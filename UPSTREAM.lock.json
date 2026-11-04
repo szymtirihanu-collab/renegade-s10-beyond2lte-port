@@ -14,7 +14,8 @@
     "commit_date": "2026-08-27T21:53:33Z",
     "license_status": "No repository license declared; no LICENSE file verified",
     "vendored": false,
-    "reason_not_vendored": "Do not copy or redistribute upstream source until its licensing is clarified."
+    "reason_not_vendored": "Use source transiently in a pinned host-build workspace; do not mirror or redistribute source or binaries until exact permission conditions and dependency notices are recorded.",
+    "permission_status": "Maintainer permission to use the implementation reported by repository owner on 2026-11-04; exact conditions not yet documented"
   },
   "mu_silicium_reference_snapshot": {
     "repository": "https://github.com/Project-Silicium/Mu-Silicium",
