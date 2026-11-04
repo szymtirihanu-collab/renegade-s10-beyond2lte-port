@@ -94,6 +94,11 @@ def main():
             if not p.is_file() or p.stat().st_size <= FAT32_MAX_FILE: continue
             if iw and p == iw:
                 print("      Splitting install.wim into FAT32-compatible SWM files")
+                # Read-only ISO mounts expose files without write permission;
+                # copytree preserves those mode bits. wimlib needs a writable
+                # staging directory to create install.swm beside install.wim.
+                p.chmod(p.stat().st_mode | 0o200)
+                p.parent.chmod(p.parent.stat().st_mode | 0o200)
                 run(["wimlib-imagex", "split", str(p), str(p.with_name("install.swm")), "3800"])
                 p.unlink()
             elif esd and p == esd:
