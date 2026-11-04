@@ -75,14 +75,27 @@ A host-side check was added as `scripts/audit_firmware_entry.py`. It passed agai
 
 **Interpretation:** this resolves the narrow concern that branching to FD base would immediately execute the FV header. The FD begins with an AArch64 reset-vector branch, and its destination is inside the SEC FFS file. This establishes the reset-vector-to-SEC-TE entry-point linkage in the built FD. It does **not** prove that the required processor state is valid or that Samsung's boot chain will accept the image.
 
+## SEC processor-state contract found in source
+
+The pinned Mu-Silicium startup assembly and Exynos 9820 platform helper were also traced:
+
+- `PlatformAssemblyInitialize()` in `S5E9820Pkg/Library/PlatformSecLib/AArch64/PlatformHelper.S` is a no-op (`ret`).
+- `ModuleEntryPoint.S` then evaluates `CurrentEL` through `EL1_OR_EL2`.
+- The macro explicitly selects EL1 (`CurrentEL=0x4`) or EL2 (`CurrentEL=0x8`). For EL3 (`CurrentEL=0xC`), it takes its deliberate infinite-loop path; it does not transition from EL3 to EL2.
+- The SEC startup code subsequently configures EL1/EL2 state and initializes the configured stack.
+
+Therefore, the current handoff has a concrete prerequisite: **the Android/Samsung boot chain must enter the BootShim/SEC path in non-secure EL1 or EL2, not EL3.** The source alone does not establish which level the user's exact bootloader uses.
+
+The appended DTB is also not demonstrated to reach DXE: the current SEC entry assembly uses `x0` as a scratch register while checking `CurrentEL`, and later reuses it for stack setup. The FDF's embedded-DTB file and `DtPlatformDxe` remain commented out. Treat the appended DTB as present in the image but not consumed by the current UEFI platform until a separate handoff/protocol path is proven.
+
 ## Remaining blockers
 
 1. **Exact-device boot entry remains unverified.** The build guide describes packaging, but does not prove that the exact SM-G975F firmware/S-Boot revision will accept and transfer control to this image. The required execution state, trust policy, and entry register contract have not been independently established.
-2. **BootShim-to-SEC processor-state contract needs review.** The FD reset-vector branch is now structurally located inside the SEC FFS file, but the required exception level, cache/MMU state, register inputs, and DTB handoff still need to be documented from the linked startup code and authoritative boot-chain evidence.
-3. **The appended FDT is not currently integrated as an active UEFI device-tree protocol in the FDF.** The platform FDF's Device Tree driver and embedded DTB section are commented out. Do not assume DXE consumes the appended FDT merely because it is present in the Android image.
+2. **BootShim-to-SEC processor-state contract needs device-side confirmation.** Source review shows SEC only supports entry at EL1 or EL2; EL3 leads to a deliberate dead loop. The exact SM-G975F bootloader's entry level and cache/MMU/register state remain unverified.
+3. **The appended FDT is not currently consumed by a demonstrated UEFI path.** SEC startup clobbers x0, and the platform FDF's Device Tree driver and embedded-DTB section are commented out. Do not assume DXE consumes the appended FDT merely because it is present in the Android image.
 4. **Firmware-volume contents still need independent structural validation.** The FV header and file size were checked, but all embedded FFS/PE32 modules, machine types, relocations, and entry points have not yet been exhaustively enumerated.
 5. **No device-side recovery path has been independently verified for this user's exact firmware state.** No hardware test should be inferred from the successful host build.
 
 ## Current decision
 
-**Do not boot or install this candidate on the handset yet.** The outer packaging is understood, the FD/stack layout in the active overlay is internally consistent, and the FD reset vector has been checked against the exact SEC TE entry point. The next work is exact SEC entry-point/processor-state verification, firmware-volume contents, and exact-device boot-entry evidence. USB OTG and DisplayPort remain later milestones; the first eventual hardware milestone should remain the existing internal framebuffer only.
+**Do not boot or install this candidate on the handset yet.** The outer packaging is understood, the FD/stack layout in the active overlay is internally consistent, and the FD reset vector has been checked against the exact SEC TE entry point. The next work is confirming the bootloader's EL1/EL2 entry state, completing firmware-volume validation, and establishing exact-device boot-entry and recovery evidence. USB OTG and DisplayPort remain later milestones; the first eventual hardware milestone should remain the existing internal framebuffer only.
