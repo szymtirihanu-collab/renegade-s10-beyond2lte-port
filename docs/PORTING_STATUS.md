@@ -51,3 +51,11 @@ The target is the **Samsung Galaxy S10+ SM-G975F (`beyond2lte`)**, Exynos 9820, 
 6. Independently verify display, USB input, and OS handoff on hardware before making any device-support claim.
 
 A source checkout check is not a build. A metadata/tree audit is not a full source-code audit. A build is not a successful device boot. A successful UEFI boot is not proof that Linux or Windows drivers are complete.
+
+
+## Latest source-level I/O findings
+
+- The pinned Samsung DTS overlay explicitly configures a Synopsys DWC3 USB-DRD node for OTG and SuperSpeed Plus, and configures a PHY-related node.
+- The same overlay enables a DisplayPort node and configures HPD/AUX/SBU/USB connector routing controls.
+- These are Android device-tree facts, not a completed UEFI implementation. Base-DTB phandle/resource resolution remains necessary before driver work.
+- Detailed sequence: [USB OTG and DisplayPort implementation notes](USB_OTG_DP_IMPLEMENTATION_NOTES.md).
