@@ -127,6 +127,7 @@ def make_gpt_disk(fat_image: Path, disk_image: Path) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--iso", default=DEFAULT_ISO)
+    ap.add_argument("--source-dir", help="Mounted Windows ISO directory, copied into staging")
     ap.add_argument("--uefi-image", required=True,
                     help="Existing Mu-beyond2lte.img from the pinned host build")
     ap.add_argument("--output", default="./beyond2lte-windows11-aio")
@@ -170,6 +171,7 @@ def main() -> int:
         run([
             sys.executable, str(media_builder),
             "--iso", str(iso),
+            *(["--source-dir", str(Path(args.source_dir).expanduser().resolve())] if args.source_dir else []),
             "--output", str(temp_out),
             "--size-gib", str(args.size_gib),
             "--uefi-image", str(uefi),
