@@ -9,6 +9,9 @@ on:
       - "scripts/audit_android_boot_image.py"
       - "scripts/audit_sec_bootarg_capture.py"
       - "scripts/apply_sec_bootarg_capture.py"
+      - "scripts/apply_bootshim_fdt_handoff.py"
+      - "scripts/audit_bootshim_fdt_handoff.py"
+      - "scripts/audit_bootshim_fdt_patch.py"
       - "patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch"
       - "UPSTREAM.lock.json"
   pull_request:

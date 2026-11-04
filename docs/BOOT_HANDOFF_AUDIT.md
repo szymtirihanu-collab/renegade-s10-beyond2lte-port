@@ -11,7 +11,7 @@ The source establishes a plausible *standard ARM64 Linux-kernel-style* handoff i
 
 The BootShim preserves incoming `x0`, overwrites `x1` with the address of its payload, copies the configured UEFI FD to `0xC9000000`, and branches there. The Linux ARM64 boot protocol assigns the DTB physical address to `x0`, so this design is compatible with a DTB pointer being present in `x0` at BootShim entry. This is a protocol-based inference, not direct evidence of Samsung S-Boot behavior on this handset.
 
-The original UEFI SEC entry path did not preserve or consume that pointer. The downstream branch `feature/sec-bootarg-fdt-validation` now adds a guarded capture: the entry shim saves incoming `x0` in callee-saved `x19`, passes it as the first argument to `SecEntry()`, and checks after `MemoryPeim()` whether the value is aligned and the minimum 40-byte FDT header span lies inside one declared DRAM descriptor. This is deliberately only a range check: it does not dereference `x0`, prove that it is an FDT, or make the DTB available to DXE. The actual S-Boot value and mapping contract remain unverified.
+The original UEFI SEC entry path did not preserve or consume that pointer. The downstream branch now patches the pinned BootShim so that, immediately before branching to the UEFI FD, it computes `x0 = runtime_address(_Payload) + FD_SIZE`. In this package recipe `_Payload` begins at the first byte of the embedded FD and the appended DTB follows the FD immediately, so this explicitly passes the appended FDT address rather than relying on Samsung S-Boot's incoming `x0`. The SEC entry shim saves that value in callee-saved `x19`, passes it to `SecEntry()`, and checks after `MemoryPeim()` whether it is aligned and the minimum 40-byte FDT header span lies inside one declared DRAM descriptor. This is deliberately only a range check: it does not dereference or parse the FDT, establish that the loaded kernel region remains mapped for later DXE use, or make the DTB available to a DXE consumer.
 
 The SEC startup path accepts non-secure EL1 or EL2. Its EL3 path deliberately loops; there is no EL3-to-EL2 transition in this code. The exact entry EL on the user's handset remains unverified.
 
@@ -29,7 +29,7 @@ The relevant instructions are:
 - Load `FD_BASE` and `FD_SIZE`, copy exactly `FD_SIZE` bytes from payload to the configured FD base.
 - `br x5`: branch to the FD base.
 
-No instruction in this shim writes `x0`. Thus `x0` is preserved from the Android bootloader's kernel-entry register state through the final branch to the UEFI FD. `x1` is not preserved; it is repurposed for the payload address. The shim does not explicitly pass the appended FDT's address in a dedicated register or data structure.
+No instruction in this shim writes `x0`. Thus `x0` is preserved from the Android bootloader's kernel-entry register state through the final branch to the UEFI FD. `x1` is not preserved; it is repurposed for the payload address. The downstream BootShim patch now explicitly computes the appended FDT address as `_Payload + FD_SIZE` and places it in `x0` immediately before the branch to the FD. The host source audit checks this exact transformation against the pinned BootShim source.
 
 The current package audit independently verified the actual candidate's 112-byte shim prefix, 4 MiB FD copy range, embedded FD equality and appended FDT bounds. See `ARTIFACT_PACKAGE_AUDIT.md`.
 
@@ -43,7 +43,7 @@ The Linux ARM64 boot protocol specifies:
 - MMU is off.
 - Interrupt masks and cache/coherency conditions must satisfy the protocol.
 
-Under that protocol, BootShim's preservation of `x0` is useful: the incoming DTB pointer can survive the shim. However, the exact Samsung S-Boot implementation, firmware revision, and its conformance to every ARM64 boot-protocol requirement have not been independently inspected. Do not promote the protocol comparison into a confirmed S-Boot fact.
+Under that protocol, BootShim's preservation of `x0` is useful: the incoming DTB pointer can survive the shim. The appended FDT handoff no longer depends on S-Boot placing a DTB in `x0`: BootShim overwrites `x0` with the address derived from its own runtime payload layout. This does not establish that the Android bootloader loaded the kernel at the configured address with the required execution state, or that the FDT memory remains accessible after SEC memory initialization.
 
 Reference: Linux kernel documentation, “Booting AArch64 Linux”:
 https://www.kernel.org/doc/html/latest/arch/arm64/booting.html
@@ -111,8 +111,8 @@ The platform FDF's embedded device-tree section and Device Tree DXE driver are c
 
 ## Engineering decision
 
-The downstream branch now implements the first, conservative part of that plan: preserve incoming `x0`, pass it through the SEC C entry, and check its alignment and containment within one declared DRAM descriptor after memory initialization. It intentionally stops before dereferencing the value. A future FDT-header check must wait until the physical-to-virtual mapping and lifetime of the supplied memory are verified, and must separately establish that S-Boot actually supplies a DTB pointer for this image.
+The downstream branch now explicitly sets `x0` to the appended FDT address in BootShim, preserves it through SEC assembly, and checks its alignment and containment within one declared DRAM descriptor after memory initialization. It intentionally stops before dereferencing the value. A future FDT-header parser and DXE handoff must wait until the physical-to-virtual mapping and lifetime of the kernel payload memory are verified. The remaining bootloader questions concern image acceptance, entry EL/security state, and memory/cache/MMU setup—not the source of the DTB pointer.
 
 For exact S-Boot facts, acceptable evidence would be a trustworthy Samsung bootloader implementation/specification for the target revision or read-only hardware diagnostics captured at the existing bootloader/firmware boundary by a qualified developer. The source-only repository cannot establish those runtime facts.
 
-**Current status on `feature/sec-bootarg-fdt-validation`: guarded x0 capture and non-dereferencing DRAM range validation implemented; patch application and compilation are pending CI. Exact handset bootloader handoff remains unknown; no phone boot is verified.**
+**Current status on `feature/sec-bootarg-fdt-validation`: BootShim explicitly passes the appended FDT address in x0; SEC preserves it and performs non-dereferencing DRAM range validation. The source transformation and host build must pass CI for each new commit. Exact handset bootloader entry state and image acceptance remain unknown; no phone boot is verified.**

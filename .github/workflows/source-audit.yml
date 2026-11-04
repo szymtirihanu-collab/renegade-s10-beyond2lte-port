@@ -30,5 +30,7 @@ jobs:
         run: python scripts/audit_io_support.py
       - name: Verify SEC boot-argument capture patch
         run: python scripts/audit_sec_bootarg_patch.py
+      - name: Verify BootShim appended-FDT handoff patch
+        run: python scripts/audit_bootshim_fdt_patch.py
       - name: Verify Mu-Silicium reference snapshot and submodules
         run: python scripts/audit_mu_snapshot.py

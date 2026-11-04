@@ -41,6 +41,12 @@ test -d "$ACPI_OVERLAY/SoCs/Samsung"
 mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/SoCs"
 cp -a "$ACPI_OVERLAY/SoCs/." "$WORK/Mu-Silicium/Silicium-ACPI/SoCs/"
 
+# Explicitly pass the appended DTB address to SEC: _Payload points to the FD,
+# and the pinned package recipe places the DTB immediately after FD_SIZE bytes.
+echo "== Applying BootShim appended-FDT handoff =="
+python3 "$ROOT/scripts/apply_bootshim_fdt_handoff.py" "$WORK/Mu-Silicium"
+python3 "$ROOT/scripts/audit_bootshim_fdt_handoff.py" "$WORK/Mu-Silicium"
+
 # Apply the reviewed UFS Block I/O capability correction to the temporary
 # build tree. This reports the LU's descriptor write-protect state; it does
 # not bypass device protection or attempt any storage writes.
