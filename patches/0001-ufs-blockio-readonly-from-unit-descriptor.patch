@@ -1,0 +1,27 @@
+From: downstream audit
+Subject: [PATCH] UFS: reflect LU write-protect descriptor in Block I/O media
+
+---
+ a/Silicon/Samsung/SamsungPkg/Drivers/UfsDxe/UfsDxe.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Silicon/Samsung/SamsungPkg/Drivers/UfsDxe/UfsDxe.c b/Silicon/Samsung/SamsungPkg/Drivers/UfsDxe/UfsDxe.c
+index 0000000..0000000 100644
+--- a/Silicon/Samsung/SamsungPkg/Drivers/UfsDxe/UfsDxe.c
++++ b/Silicon/Samsung/SamsungPkg/Drivers/UfsDxe/UfsDxe.c
+@@ -1492,7 +1492,8 @@ InitUfsDriver (
+     Dev->Media.RemovableMedia = FALSE;
+     Dev->Media.MediaPresent = TRUE;
+     Dev->Media.LogicalPartition = FALSE;
+-    Dev->Media.ReadOnly = FALSE;
++    /* The Unit Descriptor was read above; do not advertise a protected LU as writable. */
++    Dev->Media.ReadOnly = (Ufs->UnitDesc[Lun].bLUWriteProtect != 0);
+     Dev->Media.WriteCaching = FALSE;
+     Dev->Media.BlockSize = BlkSize;
+     Dev->Media.IoAlign = 0;
+
+Notes:
+- This is a capability-reporting correction only. It does not bypass write protection.
+- It does not make a protected LU writable; it makes Block I/O report that it is protected.
+- It is not integrated into the downstream firmware build and has not been compiled or hardware-tested.
+- The LUN 2 / LBA 0 mapping and actual descriptor value still need read-only confirmation.
