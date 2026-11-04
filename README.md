@@ -1,54 +1,38 @@
-# Renegade S10+ / beyond2lte port
+# Renegade-style UEFI integration for Galaxy S10+ / beyond2lte
 
-**Status: research scaffold only — not bootable, not flashable, and not an official Renegade Project port.**
+**Target: Samsung Galaxy S10+ SM-G975F, Exynos 9820, AArch64.** The user reports Android 16 / Evolution X as the current Android environment.
 
-This repository investigates whether a Renegade-style EDK2 UEFI environment can be brought up on the **Samsung Galaxy S10+ Exynos variant (beyond2lte)**.
+## Important project decision
 
-## Confirmed target
+A device-specific Exynos UEFI implementation already exists: [orhunnx/beyond2lte-uefi](https://github.com/orhunnx/beyond2lte-uefi). This repository is being developed as a downstream integration and reproducibility workspace around that existing implementation—not as a second independent EDK2 platform implementation.
 
-| Property | Target |
-|---|---|
-| Device | Samsung Galaxy S10+ |
-| Exact model supplied by owner | **SM-G975F** |
-| Codename | `beyond2lte` |
-| SoC | Samsung Exynos 9820 |
-| CPU architecture | AArch64 |
-| Display | 3040 × 1440 |
-| GPU | ARM Mali-G76 MP12 |
-| Android kernel baseline | Samsung Exynos 9820 vendor kernel, 4.14 |
+The official Renegade Project's published EDK2 targets Qualcomm Snapdragon platforms. Its Qualcomm board code is not directly portable to this Exynos device. See [Renegade's FAQ](https://renegade-project.tech/en/faq) and [supported devices](https://renegade-project.tech/en/devices).
 
-The target is the international Exynos SM-G975F. The Korean SM-G975N uses the related codename `beyond2lteks` and is not the target. See [MODEL.md](docs/MODEL.md) for the model-specific scope and remaining unknowns.
+## Current status
 
-## Important architecture difference
+- [x] Confirm target model: SM-G975F / `beyond2lte`
+- [x] Identify existing Exynos 9820 UEFI implementation
+- [x] Pin reviewed upstream commit in [UPSTREAM.lock.json](UPSTREAM.lock.json)
+- [x] Add read-only source provenance checker
+- [x] Document Android 16's relevance and limits
+- [ ] Confirm upstream licensing before copying or adapting source
+- [ ] Pin Mu-Silicium and every required submodule revision
+- [ ] Reproduce a clean host-only build
+- [ ] Record static validation and artifact hashes
+- [ ] Independently validate hardware boot and OS handoff
 
-Renegade Project's published EDK2 firmware targets Qualcomm Snapdragon platforms. Its documented Qualcomm boot chain and device packages cannot be reused as if this phone were a Snapdragon device. The S10+ uses Samsung's Exynos platform and Samsung boot firmware. A real port needs independently established platform initialization, boot hand-off, memory map, interrupt controller, timer, storage, display and USB support.
+See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [model profile](docs/MODEL.md), [source audit](docs/SOURCE_AUDIT.md), and [porting status](docs/PORTING_STATUS.md).
 
-This repository therefore starts with platform research and a validation plan. A model-specific Project Silicium-based UEFI candidate has now been identified; see [EXISTING_UEFI_PORT_REVIEW.md](docs/EXISTING_UEFI_PORT_REVIEW.md) and [SOURCE_AUDIT.md](docs/SOURCE_AUDIT.md). The next step is to audit and reproduce that source, not to invent a second board package. This repository does **not** contain a fabricated device tree, guessed register addresses, patched boot images, or a supposedly working firmware binary.
+## Safe scope
 
-## Current state
+This repository currently contains documentation and read-only validation only. It does not contain a validated firmware image. It does not create partition tables, generate flash packages, or provide device-writing instructions. Do not treat a successful source check or host build as proof that firmware is safe or bootable on a handset.
 
-- [x] Target identity and architecture documented
-- [x] Exact target model supplied: SM-G975F
-- [x] Renegade/Qualcomm versus Samsung/Exynos differences documented
-- [ ] Confirm handset's bootloader state and firmware revision
-- [ ] Collect and document trustworthy Exynos 9820 hardware references
-- [ ] Establish a reproducible EDK2 build environment
-- [ ] Identify a supported and auditable boot hand-off path
-- [ ] Implement platform description and early serial/debug output
-- [ ] Bring up memory, timer, interrupt controller and console
-- [ ] Add storage, display and USB drivers
-- [ ] Validate boot on hardware with recovery and rollback procedures
+## Verify a local upstream checkout
 
-See [MODEL.md](docs/MODEL.md), [EXISTING_UEFI_PORT_REVIEW.md](docs/EXISTING_UEFI_PORT_REVIEW.md), [SOURCE_AUDIT.md](docs/SOURCE_AUDIT.md), [PORTING_STATUS.md](docs/PORTING_STATUS.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md), and [REFERENCES.md](docs/REFERENCES.md).
+After obtaining the upstream source separately, run:
 
-## Safety and device integrity
+```sh
+python3 scripts/verify_upstream.py /path/to/beyond2lte-uefi
+```
 
-Do not flash anything from this repository. There are no validated images. Samsung boot-chain behavior is not interchangeable with Qualcomm EDL/ABL workflows, and an incorrect image or partition operation can make a phone unusable or erase its data. Development must begin with source review and non-destructive research; any future device testing requires verified model-specific procedures, backups, and a recovery plan.
-
-## Scope
-
-The initial target is an **EDK2/UEFI feasibility port**, following the general idea of Renegade Project. Booting Windows ARM64 is a separate later milestone and is not implied by a UEFI build. Native Linux support is also a separate operating-system integration task.
-
-## License
-
-No Renegade Project or EDK2 source code is copied into this repository at this stage. Licensing for future imported or adapted components must be reviewed file-by-file before inclusion.
+This checks the remote URL, exact commit, clean working tree, and expected source files. It does not download, build, flash, or contact a device.
