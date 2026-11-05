@@ -135,6 +135,12 @@ python -m pip install --upgrade pip
 python -m pip install -r pip-requirements.txt
 export CLANGPDB_AARCH64_PREFIX=aarch64-linux-gnu-
 
+echo "== Resolving pinned Mu-Silicium external dependencies =="
+# DeviceBuild.py checks the Stuart dependency manifest before compiling.
+# Resolve the declared binary/tool dependencies first (onecrypto-bin,
+# mu_nasm and Mu-Basetools were otherwise missing on a clean CI runner).
+stuart_update -c Platforms/Samsung/beyond2ltePkg/DeviceBuild.py
+
 echo "== Compiling beyond2lte RELEASE UEFI =="
 python ./build_uefi.py -d beyond2lte -r RELEASE -c
 
