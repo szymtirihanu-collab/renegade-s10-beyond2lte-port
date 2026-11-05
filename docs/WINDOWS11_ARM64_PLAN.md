@@ -51,6 +51,8 @@ Windows on Arm needs more than an EFI executable launch:
 
 ## Work sequence
 
+The current host-build ACPI integration and its validation limits are documented in [ACPI_BUILD_INTEGRATION.md](ACPI_BUILD_INTEGRATION.md). The firmware build must compile and embed the Exynos tables; merely copying their source files is insufficient.
+
 ### Stage 1 — source provenance and reproducibility
 
 - Resolve the upstream repository's licensing status before copying or adapting source.
