@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/host-build.yml"
       - "scripts/host_build.sh"
+      - "scripts/prepare_acpi_tables.py"
       - "scripts/audit_firmware_entry.py"
       - "scripts/audit_android_boot_image.py"
       - "scripts/audit_sec_bootarg_capture.py"
@@ -18,6 +19,7 @@ on:
     paths:
       - ".github/workflows/host-build.yml"
       - "scripts/host_build.sh"
+      - "scripts/prepare_acpi_tables.py"
       - "scripts/audit_firmware_entry.py"
       - "scripts/audit_android_boot_image.py"
       - "scripts/audit_sec_bootarg_capture.py"
