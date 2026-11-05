@@ -121,7 +121,12 @@ sudo apt-get update
 sudo apt-get install -y \
   git mono-devel build-essential make lld uuid-dev nasm \
   gcc-aarch64-linux-gnu python3 python3-venv python3-pip \
-  gettext locales gnupg ca-certificates clang llvm curl
+  gettext locales gnupg ca-certificates clang llvm curl acpica-tools
+
+echo "== Compiling and enabling Exynos 9820 ACPI tables =="
+python3 "$ROOT/scripts/prepare_acpi_tables.py" \
+  --upstream-root "$WORK/beyond2lte-upstream" \
+  --mu-root "$WORK/Mu-Silicium"
 
 cd "$WORK/Mu-Silicium"
 python3 -m venv "$WORK/venv"
