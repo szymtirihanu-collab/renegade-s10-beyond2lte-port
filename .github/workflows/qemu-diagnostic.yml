@@ -27,11 +27,30 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes qemu-system-arm qemu-efi-aarch64
-      - name: Locate AAVMF firmware
+      - name: Locate generic AArch64 UEFI firmware
         id: firmware
+        shell: bash
         run: |
-          firmware="$(find /usr/share -type f -name 'AAVMF_CODE.fd' -print -quit)"
-          test -n "$firmware"
+          set -euo pipefail
+          firmware=""
+          for candidate in \
+            /usr/share/AAVMF/AAVMF_CODE.fd \
+            /usr/share/qemu-efi-aarch64/QEMU_EFI.fd \
+            /usr/share/qemu-efi-aarch64/QEMU_EFI-pflash.raw; do
+            if [[ -f "$candidate" ]]; then
+              firmware="$candidate"
+              break
+            fi
+          done
+
+          if [[ -z "$firmware" ]]; then
+            echo "::error::No supported AArch64 UEFI firmware image found."
+            dpkg -L qemu-efi-aarch64 || true
+            find /usr/share -type f \( -iname '*aarch64*.fd' -o -iname 'AAVMF*.fd' -o -iname 'QEMU_EFI*' \) -print || true
+            exit 1
+          fi
+
+          echo "Using firmware: $firmware"
           echo "path=$firmware" >> "$GITHUB_OUTPUT"
       - name: Run bounded generic UEFI baseline
         run: |
