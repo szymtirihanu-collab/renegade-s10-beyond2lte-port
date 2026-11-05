@@ -41,6 +41,12 @@ test -d "$ACPI_OVERLAY/SoCs/Samsung"
 mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/SoCs"
 cp -a "$ACPI_OVERLAY/SoCs/." "$WORK/Mu-Silicium/Silicium-ACPI/SoCs/"
 
+# Explicitly pass the appended DTB address to SEC: _Payload points to the FD,
+# and the pinned package recipe places the DTB immediately after FD_SIZE bytes.
+echo "== Applying BootShim appended-FDT handoff =="
+python3 "$ROOT/scripts/apply_bootshim_fdt_handoff.py" "$WORK/Mu-Silicium"
+python3 "$ROOT/scripts/audit_bootshim_fdt_handoff.py" "$WORK/Mu-Silicium"
+
 # Apply the reviewed UFS Block I/O capability correction to the temporary
 # build tree. This reports the LU's descriptor write-protect state; it does
 # not bypass device protection or attempt any storage writes.
@@ -49,6 +55,11 @@ git -C "$WORK/Mu-Silicium" apply --check "$ROOT/patches/0001-ufs-blockio-readonl
 git -C "$WORK/Mu-Silicium" apply "$ROOT/patches/0001-ufs-blockio-readonly-from-unit-descriptor.patch"
 grep -Fq 'Dev->Media.ReadOnly = (Ufs->UnitDesc[Lun].bLUWriteProtect != 0);' \
   "$WORK/Mu-Silicium/Silicon/Samsung/SamsungPkg/Drivers/UfsDxe/UfsDxe.c"
+# Preserve SEC's incoming x0 argument and validate only its physical DRAM range.
+# The pointer is deliberately not dereferenced or treated as a DTB yet.
+echo "== Applying guarded SEC boot-argument capture =="
+python3 "$ROOT/scripts/apply_sec_bootarg_capture.py" "$WORK/Mu-Silicium"
+python3 "$ROOT/scripts/audit_sec_bootarg_capture.py" "$WORK/Mu-Silicium"
 mkdir -p "$WORK/Mu-Silicium/Silicium-ACPI/Platforms/Samsung"
 
 # Fail early with a useful message if the package search paths drift again.

@@ -15,7 +15,6 @@ EXPECTED_KERNEL_ADDR = 0x10008000
 EXPECTED_RAMDISK_ADDR = 0x11000000
 EXPECTED_FD_BASE = 0xC9000000
 EXPECTED_FD_SIZE = 0x400000
-BOOTSHIM_SIZE = 112
 
 
 def fail(message: str) -> int:
@@ -63,7 +62,7 @@ def main() -> int:
 
     kernel_offset = page_size
     kernel_end = kernel_offset + kernel_size
-    if kernel_size <= BOOTSHIM_SIZE + EXPECTED_FD_SIZE or kernel_end > len(image):
+    if kernel_size <= 64 + EXPECTED_FD_SIZE or kernel_end > len(image):
         return fail("kernel payload size/extent is invalid")
     ramdisk_offset = align(kernel_end, page_size)
     ramdisk_end = ramdisk_offset + ramdisk_size
@@ -81,10 +80,22 @@ def main() -> int:
     if shim_fd_base != EXPECTED_FD_BASE or shim_fd_size != EXPECTED_FD_SIZE:
         return fail(f"BootShim FD copy range is {shim_fd_base:#x}/{shim_fd_size:#x}, expected {EXPECTED_FD_BASE:#x}/{EXPECTED_FD_SIZE:#x}")
 
-    embedded_fd_offset = BOOTSHIM_SIZE
-    embedded_fd = payload[embedded_fd_offset:embedded_fd_offset + EXPECTED_FD_SIZE]
-    if embedded_fd != fd:
-        return fail("embedded FD bytes do not exactly match SILICIUM_UEFI.fd")
+    # BootShim's binary length is not a fixed constant: adding handoff code
+    # moves the _Payload label. Locate the exact FD bytes instead of assuming
+    # the old 112-byte shim size.
+    matches = []
+    search_from = 64
+    while True:
+        offset = payload.find(fd, search_from)
+        if offset < 0:
+            break
+        matches.append(offset)
+        search_from = offset + 1
+    if len(matches) != 1:
+        return fail(f"expected exactly one embedded FD copy, found {len(matches)}")
+    embedded_fd_offset = matches[0]
+    if embedded_fd_offset + EXPECTED_FD_SIZE >= len(payload):
+        return fail("embedded FD does not leave room for the appended FDT")
 
     fdt_offset = embedded_fd_offset + EXPECTED_FD_SIZE
     fdt = payload[fdt_offset:]
@@ -116,7 +127,7 @@ def main() -> int:
 
     print("ANDROID BOOT PACKAGE AUDIT: PASS")
     print(f"Image: {len(image)} bytes; Android boot header v{header_version}; page {page_size}")
-    print(f"Kernel payload: {kernel_size} bytes at {kernel_addr:#x}; BootShim {BOOTSHIM_SIZE} bytes")
+    print(f"Kernel payload: {kernel_size} bytes at {kernel_addr:#x}; BootShim/prefix {embedded_fd_offset} bytes (derived from embedded FD position)")
     print(f"Embedded UEFI FD: {EXPECTED_FD_SIZE} bytes at payload+{embedded_fd_offset}; SHA256 {hashlib.sha256(fd).hexdigest()}")
     print(f"Appended FDT: {len(fdt)} bytes; version {version}; structure/string blocks in bounds")
     print("Ramdisk: 5-byte 'dummy' placeholder; not a usable initramfs")
