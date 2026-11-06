@@ -141,6 +141,16 @@ echo "== Resolving pinned Mu-Silicium external dependencies =="
 # mu_nasm and Mu-Basetools were otherwise missing on a clean CI runner).
 stuart_update -c Platforms/Samsung/beyond2ltePkg/DeviceBuild.py
 
+# This target is an ARM64 BootShim followed by a UEFI firmware volume, not a Linux kernel.
+# BootShim never consumes the Android ramdisk; the upstream five-byte Resources/ramdisk
+# file is only a placeholder. Supply an empty file so mkbootimg emits ramdisk_size=0
+# and ramdisk_addr=0 instead of packaging meaningless bytes.
+RAMDISK="$WORK/Mu-Silicium/Resources/ramdisk"
+test -f "$RAMDISK"
+: > "$RAMDISK"
+test ! -s "$RAMDISK"
+echo "== Android ramdisk omitted: UEFI BootShim does not consume it =="
+
 echo "== Compiling beyond2lte RELEASE UEFI =="
 python ./build_uefi.py -d beyond2lte -r RELEASE -c
 
