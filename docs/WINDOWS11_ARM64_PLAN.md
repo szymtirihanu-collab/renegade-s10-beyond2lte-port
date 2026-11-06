@@ -53,6 +53,8 @@ Windows on Arm needs more than an EFI executable launch:
 
 The current host-build ACPI integration and its validation limits are documented in [ACPI_BUILD_INTEGRATION.md](ACPI_BUILD_INTEGRATION.md). The firmware build must compile and embed the Exynos tables; merely copying their source files is insufficient.
 
+The upstream Windows UFS miniport has been reviewed at source level; see [UFS_DRIVER_SOURCE_REVIEW.md](UFS_DRIVER_SOURCE_REVIEW.md). It is write-capable, depends on firmware-initialized UFS state, requires a Windows MSVC/WDK build environment, and has unresolved licensing terms. It has not been integrated or independently built.
+
 ### Stage 1 — source provenance and reproducibility
 
 - Resolve the upstream repository's licensing status before copying or adapting source.
