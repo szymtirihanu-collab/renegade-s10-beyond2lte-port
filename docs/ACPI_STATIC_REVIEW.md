@@ -23,11 +23,13 @@ This is consistent internally as a single-core bring-up configuration. It is not
 
 The MADT GIC Distributor base is 0x10101000, which matches the corresponding register address found in the reviewed device-tree data. That single match does not validate the complete GIC programming model, interrupt assignments, CPU interface/redistributor layout, timer interrupts, PSCI, or secondary CPU startup.
 
-### APIC input is a disassembly listing, not compilable ASL
+### APIC disassembly input is accepted by ACPICA, but output needs byte-level verification
 
-The pinned upstream tree contains `APIC.dsl`, but inspection shows it is an ACPICA disassembler report: it begins with the disassembly banner, contains decoded table fields and a `Raw Table Data` hexadecimal dump, and has no `DefinitionBlock` or ASL table-construction statements. The pinned tree does not contain a sibling `APIC.aml` binary. The raw hexadecimal dump is inside the report text; it is not an ASL definition that `iasl` can compile into the original table.
+The pinned upstream `APIC.dsl` is an ACPICA disassembler report rather than conventional ASL: it contains decoded table fields and a `Raw Table Data` hexadecimal dump, and has no `DefinitionBlock`. The pinned tree does not contain a sibling `APIC.aml` binary.
 
-The integration script currently invokes `iasl -ve APIC.dsl` and then expects `APIC.aml` to exist. That generation assumption is not supported by the checked-in input format. The APIC path must be reconciled against actual clean-build logs and corrected to use a verified binary source or a deterministic, independently validated reconstruction of the raw table bytes. Do not accept a stale generated APIC.aml or a successful command exit as proof that the intended MADT was embedded.
+The clean host-build log for run 42020380924 records ACPICA 20230628 accepting this report with `iasl -ve APIC.dsl`, producing a 724-byte `APIC.aml` with zero errors, warnings, or remarks. The earlier concern that the command could not produce an output was therefore incorrect. However, the previous integration script only checked the generated file's signature, length, and checksum; it did not prove that the bytes matched the raw table dump in the pinned report.
+
+The integration now extracts the declared raw bytes, checks contiguous offsets and declared length, and compares the resulting byte sequence exactly with the generated `APIC.aml`. It also records the decoded-versus-raw OEM Table ID discrepancy instead of silently treating the symbolic header as authoritative. The known mismatch remains unresolved: the decoded field says `S5E9820 `, while the raw table bytes say `S5E9830 `. The clean build confirms compilation, not correctness of that OEM identity or Windows compatibility.
 
 ## Required follow-up before any Windows-compatibility claim
 
