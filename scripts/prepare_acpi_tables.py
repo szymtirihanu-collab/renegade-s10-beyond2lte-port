@@ -77,7 +77,7 @@ def validate_apic_disassembly(source: Path, compiled: Path) -> dict[str, object]
     import re
 
     text = source.read_text(encoding="utf-8")
-    match = re.search(r"Raw Table Data: Length (\\d+) \\(0x([0-9A-Fa-f]+)\\)", text)
+    match = re.search(r"Raw Table Data: Length (\d+) \(0x([0-9A-Fa-f]+)\)", text)
     if not match:
         raise RuntimeError(f"{source}: missing ACPICA Raw Table Data block")
     expected_length = int(match.group(1), 10)
@@ -86,7 +86,7 @@ def validate_apic_disassembly(source: Path, compiled: Path) -> dict[str, object]
 
     raw = bytearray()
     for line in text[match.end():].splitlines():
-        row = re.match(r"\\s*([0-9A-Fa-f]{4}):((?:\\s+[0-9A-Fa-f]{2})+)\\s+//", line)
+        row = re.match(r"\s*([0-9A-Fa-f]{4}):((?:\s+[0-9A-Fa-f]{2})+)\s+//", line)
         if not row:
             continue
         offset = int(row.group(1), 16)
@@ -103,7 +103,7 @@ def validate_apic_disassembly(source: Path, compiled: Path) -> dict[str, object]
         raise RuntimeError(
             f"{compiled}: iasl output differs from the raw table embedded in {source}"
         )
-    decoded = re.search(r'^\\s*\\[010h[^\\n]*Oem Table ID\\s*:\\s*"([^"]+)"', text, re.MULTILINE)
+    decoded = re.search(r'^\s*\[010h[^\n]*Oem Table ID\s*:\s*"([^"]+)"', text, re.MULTILINE)
     raw_oem = bytes(raw[16:24]).decode("ascii", errors="replace")
     decoded_oem = decoded.group(1) if decoded else None
     return {
