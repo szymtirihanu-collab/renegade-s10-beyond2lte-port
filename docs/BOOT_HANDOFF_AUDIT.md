@@ -75,6 +75,34 @@ The Exynos 9820 platform hook in `PlatformSec.c` only enables framebuffer writes
 
 The platform FDF's embedded device-tree section and Device Tree DXE driver are commented out in the reviewed device overlay. Therefore, the current source does not demonstrate a later path that recovers the appended FDT.
 
+## Additional upstream S-Boot evidence (static, revision-limited)
+
+A later review of the device-specific upstream repository found additional evidence that was not included in the original handoff audit:
+
+- Upstream `DEVIR.md` at the pinned device commit records static analysis of stock `G975FXXSGHWC1` and `G975FXXSGHWC2` S-Boot images.
+- The HWC2 analysis identifies a wrapper around `f_load_hypervisor` and records the Samsung SMC call convention used by the stock U-H loader: `x0=0xC2000400`, `x1=0x87001000`, `x2=0x2000`, `x3=1`, `x4=0x87000000`, and `x5=0x100000`. These are arguments to the stock hypervisor-loading service, **not** the Android boot-image kernel-entry register contract and must not be copied into BootShim.
+- The same analysis explicitly says its static call-graph scan does not prove whether the U-H wrapper is dispatched on the custom-BOOT path. A function and ABI can be identified without proving that this path invokes them.
+- Upstream records a device-side UEFI `CurrentEL` observation for its own test configuration. That is useful corroboration that one S10+ configuration reached UEFI at EL1, but it is not a measurement of this project's handset or its reported bootloader build.
+
+References (all pinned to `orhunnx/beyond2lte-uefi@f122c7024c5eeef2c8c78dfd08c62708c9ef823d`):
+
+- `DEVIR.md`, sections “9820 S-Boot / uH research notes” and “HWC2 S-BOOT dispatch boundary”.
+- `EL3_SEH_PLANI.md`, which documents the Exynos EL3 SMC interface as understood by that upstream project.
+- `STOK_ACILIS.md`, the upstream stock boot/initcall analysis.
+
+### Applicability to this project
+
+The upstream binary evidence is revision-specific. Its examined builds (`G975FXXSGHWC1` / `G975FXXSGHWC2`) do not match the bootloader property previously supplied for this project's handset (`G975FXXUHHXJ1`). The property string alone also does not identify every relevant S-Boot component or prove that the currently executing boot chain matches either upstream sample.
+
+Therefore:
+
+1. The Samsung U-H SMC ABI is now documented as a known Exynos 9820 interface in the upstream sample; it is **not** evidence that the normal custom-BOOT handoff invokes that interface.
+2. The upstream static analysis does not establish the entry values of `CurrentEL`, `SCR_EL3`, `SCTLR_ELx`, `HCR_EL2`, `SPSR_ELx`, `DAIF`, cache state, or translation-table state at this project's BootShim entry.
+3. It does not prove image acceptance, signature policy, entry address, or memory reservations for the user's reported bootloader build.
+4. No U-H/EL2 loading experiment, SMC invocation, partition access, or device write is justified by this evidence.
+
+The correct status remains **partially characterized, not validated**. Closing the remaining gap requires a trustworthy analysis of the exact bootloader binaries for this handset and a read-only measurement at the existing handoff boundary. Until those are available, do not alter the SEC exception-level path or infer that a different EL/security state should be forced.
+
 ## Handoff matrix
 
 | Property | Source finding | Exact S-Boot state |
@@ -83,7 +111,7 @@ The platform FDF's embedded device-tree section and Device Tree DXE driver are c
 | Incoming `x0` | BootShim preserves it unchanged | Whether S-Boot sets it to the DTB address is inferred from ARM64 protocol, not measured |
 | Incoming `x1` | Overwritten with payload address | Exact initial value immaterial to current shim |
 | `x2`, `x3` | Not modified by BootShim | Initial values unverified |
-| Exception level | SEC supports EL1 and EL2; fallback loops | Actual EL1/EL2/EL3 unknown |
+| Exception level | SEC supports EL1 and EL2; fallback loops. Upstream reports EL1 in its own device test. | Exact EL/security state for this project's reported bootloader build remains unknown |
 | Security state | SEC source assumes non-secure execution | Actual S-Boot security state unknown |
 | MMU/cache state | SEC performs some cache operations; platform hook is no-op | Full entry contract and cache/coherency state unknown |
 | Interrupt masks | No BootShim code establishes them | Exact DAIF state unknown |
@@ -103,7 +131,7 @@ The platform FDF's embedded device-tree section and Device Tree DXE driver are c
 
 **Not proven:**
 
-1. Whether the exact SM-G975F S-Boot build accepts this image and reaches BootShim.
+1. Whether the exact SM-G975F S-Boot build accepts this image and reaches BootShim. Upstream HWC1/HWC2 disassembly does not settle this for the reported UHHXJ1 build.
 2. Which exception level and security state S-Boot uses for this image.
 3. Whether the MMU is off and the cache, coherency, timer and interrupt state satisfy the firmware's assumptions.
 4. Whether the memory map and reserved regions agree with the bootloader's live state.
