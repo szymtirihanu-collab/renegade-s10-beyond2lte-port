@@ -103,6 +103,38 @@ Therefore:
 
 The correct status remains **partially characterized, not validated**. Closing the remaining gap requires a trustworthy analysis of the exact bootloader binaries for this handset and a read-only measurement at the existing handoff boundary. Until those are available, do not alter the SEC exception-level path or infer that a different EL/security state should be forced.
 
+## Exact reported firmware revision: comparison result
+
+The previously supplied device property is `G975FXXUHHXJ1`. Public firmware catalogues identify this as an SM-G975F Android 12 release with **binary / software revision H**, build date `2024-10-03`, changelist `25257816`, and CSC `G975FOXMHHXJ1` for the DBT package. The catalogued package includes a separate 5.19 MB BL archive named `BL_G975FXXUHHXJ1_CL25257816_QB86559650_REV01_user_low_ship.tar.md5.zip`.
+
+By contrast, the upstream device investigation documents:
+
+- `G975FXXSGHWC1`: binary revision G; its S-Boot and U-H files were statically examined.
+- `G975FXXSGHWC2`: binary revision G; the upstream device's S-Boot LUN and U-H were compared. The upstream report finds the HWC1/HWC2 U-H call wrapper and its six SMC arguments match, while also noting that its static dispatch scan cannot prove whether that wrapper is invoked on the custom-BOOT path.
+
+This is a confirmed revision mismatch: the user's reported XJ1 package is binary revision H, whereas the upstream HWC1/HWC2 evidence is revision G. Similar model, SoC, and Android version do not establish identical S-Boot code or dispatch behavior.
+
+### Exact-revision evidence status
+
+| Question | Current evidence | Status |
+|---|---|---|
+| Is XJ1 a real SM-G975F firmware identifier? | Public firmware catalogues list it for SM-G975F | Confirmed as a firmware package identifier |
+| What binary revision does the XJ1 package list? | H | Confirmed by catalogue metadata |
+| Has the XJ1 BL archive been listed? | Yes; 5.19 MB BL archive name is published | Confirmed as available metadata |
+| Has the XJ1 `sboot.bin` been extracted and hashed in this project? | No | Not inspected |
+| Has XJ1 S-Boot code been compared with HWC1/HWC2 around U-H dispatch, entry setup, and boot-image launch? | No | Not inspected |
+| Can HWC1/HWC2 conclusions be applied to XJ1? | No binary equivalence evidence | Must not assume |
+
+Public metadata references:
+
+- SamFW, SM-G975F / DBT / `G975FXXUHHXJ1`: https://samfw.com/firmware/SM-G975F/DBT/G975FXXUHHXJ1
+- SamMobile, SM-G975F / `G975FXXUHHXJ1`: https://www.sammobile.com/samsung/galaxy-s10-plus/firmware/SM-G975F/INS/download/G975FXXUHHXJ1/2112161/
+- SamFW, SM-G975F / DBT / `G975FXXSGHWC2` (binary revision G): https://samfw.com/firmware/SM-G975F/DBT/G975FXXSGHWC2
+- SamFW, SM-G975F / SMA / `G975FXXSGHWC1` (binary revision G): https://samfw.com/firmware/SM-G975F/SMA/G975FXXSGHWC1
+- Device-specific upstream static analysis: `orhunnx/beyond2lte-uefi@f122c7024c5eeef2c8c78dfd08c62708c9ef823d`, `DEVIR.md`.
+
+**Important limitation:** catalogue metadata is not a substitute for inspecting the actual XJ1 BL archive. No claim is made here about XJ1's S-Boot implementation, boot-image acceptance policy, runtime entry registers, or EL/security transition. The next source-level comparison is blocked on obtaining a verifiable XJ1 bootloader binary for offline analysis; until then, the exact-revision handoff remains unverified. No device-side read, write, flash, or boot experiment is part of this step.
+
 ## Handoff matrix
 
 | Property | Source finding | Exact S-Boot state |
