@@ -29,7 +29,7 @@ Windows 11 ARM64 is now the primary OS experiment for this port. The existing UE
 - [ ] Record static validation and artifact hashes
 - [ ] Independently validate hardware boot and OS handoff
 
-See [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [permission record](docs/UPSTREAM_PERMISSION.md), [model profile](docs/MODEL.md), [USB/display source audit](docs/USB_DISPLAY_SOURCE_AUDIT.md), [DWC3 host-driver design](docs/USB_DWC3_DRIVER_DESIGN.md), [Mu-Silicium dependency snapshot](docs/MU_SILICIUM_DEPENDENCIES.md), [cloud CI boundary](docs/CLOUD_CI.md), and [porting status](docs/PORTING_STATUS.md).
+See the [Samsung S-Boot → BootShim handoff audit](docs/BOOT_HANDOFF_AUDIT.md), including revision-limited upstream S-Boot disassembly evidence. Also see [upstream integration notes](docs/UPSTREAM_INTEGRATION.md), [permission record](docs/UPSTREAM_PERMISSION.md), [model profile](docs/MODEL.md), [USB/display source audit](docs/USB_DISPLAY_SOURCE_AUDIT.md), [DWC3 host-driver design](docs/USB_DWC3_DRIVER_DESIGN.md), [Mu-Silicium dependency snapshot](docs/MU_SILICIUM_DEPENDENCIES.md), [cloud CI boundary](docs/CLOUD_CI.md), and [porting status](docs/PORTING_STATUS.md).
 
 ## Windows ARM64 installation-media packager
 
