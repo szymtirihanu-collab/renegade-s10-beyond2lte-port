@@ -72,6 +72,48 @@ def validate_table(path: Path, signature: bytes) -> dict[str, object]:
     }
 
 
+def validate_apic_disassembly(source: Path, compiled: Path) -> dict[str, object]:
+    """Prove iasl's APIC output matches the raw bytes embedded in its disassembly listing."""
+    import re
+
+    text = source.read_text(encoding="utf-8")
+    match = re.search(r"Raw Table Data: Length (\\d+) \\(0x([0-9A-Fa-f]+)\\)", text)
+    if not match:
+        raise RuntimeError(f"{source}: missing ACPICA Raw Table Data block")
+    expected_length = int(match.group(1), 10)
+    if expected_length != int(match.group(2), 16):
+        raise RuntimeError(f"{source}: inconsistent raw-data length declaration")
+
+    raw = bytearray()
+    for line in text[match.end():].splitlines():
+        row = re.match(r"\\s*([0-9A-Fa-f]{4}):((?:\\s+[0-9A-Fa-f]{2})+)\\s+//", line)
+        if not row:
+            continue
+        offset = int(row.group(1), 16)
+        if offset != len(raw):
+            raise RuntimeError(f"{source}: raw-data offset gap/overlap at 0x{offset:04X}")
+        raw.extend(int(value, 16) for value in row.group(2).split())
+    if len(raw) != expected_length:
+        raise RuntimeError(
+            f"{source}: extracted {len(raw)} raw bytes, expected {expected_length}"
+        )
+
+    actual = compiled.read_bytes()
+    if actual != bytes(raw):
+        raise RuntimeError(
+            f"{compiled}: iasl output differs from the raw table embedded in {source}"
+        )
+    decoded = re.search(r'^\\s*\\[010h[^\\n]*Oem Table ID\\s*:\\s*"([^"]+)"', text, re.MULTILINE)
+    raw_oem = bytes(raw[16:24]).decode("ascii", errors="replace")
+    decoded_oem = decoded.group(1) if decoded else None
+    return {
+        "raw_dump_matches_compiled_output": True,
+        "decoded_oem_table_id": decoded_oem,
+        "raw_oem_table_id": raw_oem,
+        "oem_table_id_mismatch": decoded_oem != raw_oem,
+    }
+
+
 def enable_acpi_fdf(mu_root: Path) -> Path:
     include = mu_root / "Platforms/Samsung/beyond2ltePkg/Include/ACPI.inc"
     fdf = mu_root / "Platforms/Samsung/beyond2ltePkg/beyond2lte.fdf"
@@ -130,6 +172,17 @@ def main() -> int:
     manifest = []
     for filename, signature in TABLES.items():
         manifest.append(validate_table(target_soc / filename, signature))
+    apic_audit = validate_apic_disassembly(
+        target_soc / "APIC.dsl", target_soc / "APIC.aml"
+    )
+    manifest[0].update(apic_audit)
+    if apic_audit["oem_table_id_mismatch"]:
+        print(
+            "WARNING: APIC decoded OEM Table ID differs from its raw bytes: "
+            f"{apic_audit['decoded_oem_table_id']!r} vs "
+            f"{apic_audit['raw_oem_table_id']!r}",
+            file=sys.stderr,
+        )
     manifest.append(validate_table(common_ssdt, b"SSDT"))
 
     include = enable_acpi_fdf(mu_root)
