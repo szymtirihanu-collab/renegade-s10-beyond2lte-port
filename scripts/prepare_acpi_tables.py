@@ -201,9 +201,12 @@ def main() -> int:
         "tables": manifest,
         "fdf_include": str(include.relative_to(mu_root)),
         "freeform_guid": ACPI_FREEFORM_GUID,
-        "result": "HOST_ACPI_TABLES_COMPILED_AND_ENABLED",
+        "result": "HOST_ACPI_TABLES_VALIDATED_AND_ENABLED",
         "limitations": [
             "Validates table headers, lengths, and checksums; not full Windows ACPI conformance.",
+            "APIC.aml preserves the pinned disassembly raw bytes; iasl acceptance does not establish semantic correctness.",
+            "The APIC decoded OEM Table ID (S5E9820) differs from the raw table ID (S5E9830); this discrepancy remains unresolved.",
+            "The reviewed MADT and minimal DSDT expose CPU0 only; this is not validated eight-core SMP support.",
             "Does not prove the tables are accepted by firmware or Windows on the handset.",
             "Does not access, flash, repartition, or modify a physical device.",
         ],
