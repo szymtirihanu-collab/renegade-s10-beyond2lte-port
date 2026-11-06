@@ -12,7 +12,6 @@ FDT_MAGIC = 0xD00DFEED
 EXPECTED_HEADER_VERSION = 1
 EXPECTED_PAGE_SIZE = 2048
 EXPECTED_KERNEL_ADDR = 0x10008000
-EXPECTED_RAMDISK_ADDR = 0x11000000
 EXPECTED_FD_BASE = 0xC9000000
 EXPECTED_FD_SIZE = 0x400000
 
@@ -48,8 +47,10 @@ def main() -> int:
         return fail(f"page size {page_size} != expected {EXPECTED_PAGE_SIZE}")
     if kernel_addr != EXPECTED_KERNEL_ADDR:
         return fail(f"kernel load address {kernel_addr:#x} != expected {EXPECTED_KERNEL_ADDR:#x}")
-    if ramdisk_addr != EXPECTED_RAMDISK_ADDR:
-        return fail(f"ramdisk load address {ramdisk_addr:#x} != expected {EXPECTED_RAMDISK_ADDR:#x}")
+    if ramdisk_size != 0:
+        return fail(f"expected no Android ramdisk for the UEFI BootShim path; found {ramdisk_size} bytes")
+    if ramdisk_addr != 0:
+        return fail(f"empty ramdisk must have load address 0, found {ramdisk_addr:#x}")
     if second_size != 0:
         return fail(f"unexpected second-stage payload size {second_size}")
     recovery_dtbo_size = struct.unpack_from("<I", image, 1632)[0]
@@ -69,8 +70,8 @@ def main() -> int:
     if ramdisk_end > len(image) or align(ramdisk_end, page_size) != len(image):
         return fail("ramdisk/file extent does not match Android page alignment")
     ramdisk = image[ramdisk_offset:ramdisk_end]
-    if ramdisk != b"dummy":
-        return fail(f"unexpected ramdisk payload {ramdisk!r}; expected 5-byte placeholder")
+    if ramdisk:
+        return fail("ramdisk payload is not empty; UEFI BootShim does not consume an Android ramdisk")
 
     payload = image[kernel_offset:kernel_end]
     # BootShim's ARM64 Image header and FD copy parameters.
@@ -130,7 +131,7 @@ def main() -> int:
     print(f"Kernel payload: {kernel_size} bytes at {kernel_addr:#x}; BootShim/prefix {embedded_fd_offset} bytes (derived from embedded FD position)")
     print(f"Embedded UEFI FD: {EXPECTED_FD_SIZE} bytes at payload+{embedded_fd_offset}; SHA256 {hashlib.sha256(fd).hexdigest()}")
     print(f"Appended FDT: {len(fdt)} bytes; version {version}; structure/string blocks in bounds")
-    print("Ramdisk: 5-byte 'dummy' placeholder; not a usable initramfs")
+    print("Ramdisk: omitted (0 bytes, load address 0); not required by this UEFI BootShim path")
     print("Limit: packaging/structure checks only; no proof Samsung accepts this image or passes the required CPU state.")
     return 0
 
