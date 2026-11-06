@@ -51,7 +51,7 @@ Windows on Arm needs more than an EFI executable launch:
 
 ## Work sequence
 
-The current host-build ACPI integration and its validation limits are documented in [ACPI_BUILD_INTEGRATION.md](ACPI_BUILD_INTEGRATION.md). The firmware build must compile and embed the Exynos tables; merely copying their source files is insufficient. A separate source-level review found an APIC OEM Table ID mismatch between the decoded header and raw table bytes, and confirmed that the current MADT/DSDT processor declarations expose only CPU0; see [ACPI_STATIC_REVIEW.md](ACPI_STATIC_REVIEW.md). These findings remain unresolved and prevent any claim of validated eight-core support.
+The current host-build ACPI integration and its validation limits are documented in [ACPI_BUILD_INTEGRATION.md](ACPI_BUILD_INTEGRATION.md). The firmware build must compile and embed the Exynos tables; merely copying their source files is insufficient. A separate source-level review found an APIC OEM Table ID mismatch between the decoded header and raw table bytes, confirmed that the current MADT/DSDT processor declarations expose only CPU0, and found that the pinned APIC.dsl is a disassembler listing rather than compilable ASL even though the preparation script treats it as compiler input; see [ACPI_STATIC_REVIEW.md](ACPI_STATIC_REVIEW.md). These findings leave APIC generation unresolved and prevent any claim of validated eight-core support.
 
 The upstream Windows UFS miniport has been reviewed at source level; see [UFS_DRIVER_SOURCE_REVIEW.md](UFS_DRIVER_SOURCE_REVIEW.md). It is write-capable, depends on firmware-initialized UFS state, requires a Windows MSVC/WDK build environment, and has unresolved licensing terms. It has not been integrated or independently built.
 
